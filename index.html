@@ -1,0 +1,4422 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verbalia – El Grimorio Olvidado</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --ink: #0a0806;
+      --parchment: #e8d5a3;
+      --aged: #c8b87a;
+      --gold: #b8922a;
+      --gold-hi: #d4a835;
+      --ember: #a02020;
+      --rune: #4a7aaa;
+      --shadow: #1a1209;
+      --panel: rgba(10, 8, 6, 0.88);
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0a0806;
+      font-family: 'Crimson Text', serif;
+      color: var(--parchment);
+    }
+
+    /* ══════════════════════════════════════════
+     SCREENS
+  ══════════════════════════════════════════ */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* ══════════════════════════════════════════
+     TITLE SCREEN — Elden Ring / Genshin style
+  ══════════════════════════════════════════ */
+    #screen-title {
+      background: #0a0806;
+      overflow: hidden;
+      justify-content: flex-end;
+      align-items: flex-start;
+    }
+
+    #title-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('assets/img/title.png');
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      filter: brightness(0.65) saturate(0.75);
+      z-index: 0;
+      animation: titleBgFade 2.4s ease forwards;
+    }
+
+    @keyframes titleBgFade {
+      from {
+        opacity: 0;
+        filter: brightness(0) saturate(0);
+      }
+
+      to {
+        opacity: 1;
+        filter: brightness(0.65) saturate(0.75);
+      }
+    }
+
+    /* Vignette overlay */
+    #title-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 60%, transparent 30%, rgba(10, 8, 6, 0.7) 80%),
+        linear-gradient(to right, rgba(10, 8, 6, 0.85) 0%, rgba(10, 8, 6, 0.3) 55%, rgba(10, 8, 6, 0.6) 100%),
+        linear-gradient(to top, rgba(10, 8, 6, 0.9) 0%, transparent 40%);
+    }
+
+    #title-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 5vw 6vh 6vw;
+      width: 100%;
+      max-width: 520px;
+      animation: titleContentRise 1.8s ease 0.6s both;
+    }
+
+    @keyframes titleContentRise {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #title-sigil {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 1.6rem;
+      opacity: 0.7;
+    }
+
+    /* The gold line that draws itself */
+    .title-line {
+      height: 1px;
+      background: linear-gradient(to right, var(--gold), transparent);
+      width: 0;
+      margin-bottom: 1.4rem;
+      animation: lineDraw 1.2s ease 1.2s forwards;
+    }
+
+    @keyframes lineDraw {
+      to {
+        width: 260px;
+      }
+    }
+
+    .title-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      opacity: 0.8;
+    }
+
+    h1.game-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.8rem, 8vw, 5.2rem);
+      font-weight: 900;
+      color: var(--parchment);
+      letter-spacing: 0.08em;
+      line-height: 0.95;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 40px rgba(184, 146, 42, 0.25);
+    }
+
+    h2.game-subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+      font-weight: 400;
+      color: var(--aged);
+      letter-spacing: 0.22em;
+      margin-bottom: 2.4rem;
+      opacity: 0.75;
+    }
+
+    .title-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      align-items: flex-start;
+    }
+
+    .btn-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.35em 0;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .btn-title::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: currentColor;
+      transition: width 0.25s;
+      flex-shrink: 0;
+    }
+
+    .btn-title:hover::before {
+      width: 36px;
+    }
+
+    .btn-title-primary {
+      color: var(--parchment);
+      font-size: 0.88rem;
+    }
+
+    .btn-title-primary:hover {
+      color: var(--gold-hi);
+    }
+
+    .btn-title-secondary {
+      color: var(--aged);
+    }
+
+    .btn-title-secondary:hover {
+      color: var(--parchment);
+    }
+
+    /* Info panel (slides in from right) */
+    #info-panel {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(420px, 92vw);
+      background: var(--panel);
+      border-left: 1px solid rgba(184, 146, 42, 0.2);
+      z-index: 10;
+      padding: 4rem 2.5rem 3rem;
+      transform: translateX(100%);
+      transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+    }
+
+    #info-panel.open {
+      transform: translateX(0);
+    }
+
+    #btn-close-info {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--aged);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    #btn-close-info:hover {
+      color: var(--parchment);
+    }
+
+    .info-section {
+      margin-bottom: 2rem;
+    }
+
+    .info-section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(184, 146, 42, 0.2);
+    }
+
+    .info-section p,
+    .info-section li {
+      font-size: 0.92rem;
+      color: rgba(232, 213, 163, 0.8);
+      line-height: 1.7;
+    }
+
+    .info-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .info-section ul li::before {
+      content: '—';
+      color: var(--gold);
+      margin-right: 0.5em;
+    }
+
+    .key-tag {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: rgba(184, 146, 42, 0.12);
+      border: 1px solid rgba(184, 146, 42, 0.3);
+      padding: 0.1em 0.5em;
+      border-radius: 2px;
+      color: var(--aged);
+    }
+
+    /* Sound toggle */
+    #btn-sound {
+      position: absolute;
+      bottom: 2.5rem;
+      right: 2rem;
+      z-index: 5;
+      background: none;
+      border: 1px solid rgba(184, 146, 42, 0.3);
+      color: var(--aged);
+      width: 2.4rem;
+      height: 2.4rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0;
+    }
+
+    #btn-sound:hover {
+      border-color: var(--gold);
+      color: var(--parchment);
+    }
+
+    /* ══════════════════════════════════════════
+     CINEMATIC
+  ══════════════════════════════════════════ */
+    #screen-cinematic {
+      background: #000;
+      justify-content: center;
+    }
+
+    #cinematic-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    #btn-skip-cinematic {
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      color: rgba(232, 213, 163, 0.5);
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(232, 213, 163, 0.2);
+      padding: 0.5em 1.2em;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    #btn-skip-cinematic:hover {
+      color: var(--parchment);
+      border-color: var(--parchment);
+    }
+
+    /* ══════════════════════════════════════════
+     CHARACTER SELECT — Genshin style
+  ══════════════════════════════════════════ */
+    #screen-charselect {
+      background: #0a0806;
+      flex-direction: row;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    /* 3D scene background */
+    #charselect-scene {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* Dark vignette sides */
+    #charselect-scene::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, rgba(10, 8, 6, 0.95) 0%, rgba(10, 8, 6, 0.4) 35%, rgba(10, 8, 6, 0.1) 55%, rgba(10, 8, 6, 0.6) 100%),
+        linear-gradient(to top, rgba(10, 8, 6, 0.8) 0%, transparent 30%);
+      pointer-events: none;
+    }
+
+    /* Left panel */
+    #char-left-panel {
+      position: relative;
+      z-index: 2;
+      width: min(300px, 40vw);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 2rem 4rem 3rem;
+      flex-shrink: 0;
+    }
+
+    .char-panel-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.28em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      opacity: 0.8;
+    }
+
+    .char-panel-name {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900;
+      color: var(--parchment);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .char-panel-class {
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--aged);
+      margin-bottom: 1.8rem;
+    }
+
+    .char-nav {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .char-nav-btn {
+      width: 2.2rem;
+      height: 2.2rem;
+      background: none;
+      border: 1px solid rgba(184, 146, 42, 0.35);
+      color: var(--aged);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-family: 'Cinzel', serif;
+    }
+
+    .char-nav-btn:hover {
+      border-color: var(--gold);
+      color: var(--parchment);
+    }
+
+    #btn-confirm-char {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-hi) 100%);
+      border: none;
+      padding: 0.8em 2em;
+      cursor: pointer;
+      transition: all 0.2s;
+      max-width: 200px;
+    }
+
+    #btn-confirm-char:hover {
+      background: linear-gradient(135deg, var(--gold-hi) 0%, #f0d060 100%);
+      transform: translateY(-1px);
+    }
+
+    #btn-confirm-char:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Right panel – customization */
+    #char-right-panel {
+      position: relative;
+      z-index: 2;
+      width: min(240px, 35vw);
+      margin-left: auto;
+      padding: 3rem 2rem 3rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .custom-group-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .color-swatches {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      width: 1.8rem;
+      height: 1.8rem;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .swatch:hover {
+      transform: scale(1.15);
+    }
+
+    .swatch.active {
+      border-color: var(--parchment);
+      box-shadow: 0 0 0 1px var(--gold);
+    }
+
+    /* ══════════════════════════════════════════
+     GAME SCREEN
+  ══════════════════════════════════════════ */
+    #screen-game {
+      position: relative;
+      background: #0d0a07;
+    }
+
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* HUD */
+    #hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      /* 👈 oculto por defecto */
+    }
+
+
+    #hud-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.4rem;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, transparent 100%);
+    }
+
+    /* Health bar */
+    #health-container {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .health-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      color: var(--aged);
+      text-transform: uppercase;
+      width: 2.5rem;
+    }
+
+    #health-track {
+      width: 140px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: visible;
+    }
+
+    #health-fill {
+      height: 100%;
+      background: linear-gradient(to right, #8b1a1a, #c0392b, #e74c3c);
+      transition: width 0.4s ease;
+      position: relative;
+    }
+
+    #health-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -2px;
+      width: 2px;
+      height: 8px;
+      background: #fff;
+      opacity: 0.6;
+    }
+
+    #health-text {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      color: var(--aged);
+      letter-spacing: 0.05em;
+      min-width: 3.5rem;
+    }
+
+    .hud-xp {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      color: var(--gold);
+      letter-spacing: 0.14em;
+      margin-left: auto;
+    }
+
+    .hud-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      color: var(--parchment);
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+      margin-left: 1rem;
+    }
+
+    /* DESPUES */
+    #objective-banner {
+      position: absolute;
+      top: calc(4.5rem + 160px + 0.6rem);
+      right: 1rem;
+      background: rgba(10, 8, 6, 0.78);
+      border: 1px solid rgba(184, 146, 42, 0.3);
+      border-left: 2px solid var(--gold);
+      padding: 0.5rem 0.9rem;
+      text-align: left;
+      z-index: 10;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      width: 170px;
+    }
+
+    #objective-banner .obj-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.24em;
+      color: var(--gold);
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+    }
+
+    /* DESPUES */
+    #objective-banner .obj-text {
+      font-size: 0.78rem;
+      line-height: 1.3;
+      color: var(--parchment);
+    }
+
+    #objective-banner.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #pointer-resume-hint {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 8, 6, 0.35);
+      cursor: pointer;
+    }
+
+    #pointer-resume-hint.active {
+      display: flex;
+    }
+
+    #pointer-resume-hint span {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--parchment);
+      background: rgba(10, 8, 6, 0.9);
+      border: 1px solid rgba(184, 146, 42, 0.4);
+      border-top: 2px solid var(--gold);
+      padding: 0.8em 1.6em;
+    }
+
+    /* Controls hint */
+    #controls-hint {
+      position: absolute;
+      bottom: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1.8rem;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.5;
+    }
+
+    .ctrl-key {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      color: var(--aged);
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+
+    .ctrl-key kbd {
+      display: block;
+      background: rgba(232, 213, 163, 0.08);
+      border: 1px solid rgba(184, 146, 42, 0.3);
+      padding: 0.2em 0.5em;
+      border-radius: 2px;
+      margin-bottom: 0.25rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--parchment);
+    }
+
+    /* NPC Dialog */
+    #dialog-box {
+      position: absolute;
+      bottom: 4.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 680px;
+      width: 92%;
+      background: rgba(10, 8, 6, 0.94);
+      border: 1px solid rgba(184, 146, 42, 0.3);
+      border-top: 2px solid var(--gold);
+      padding: 1.2rem 1.6rem;
+      z-index: 20;
+      display: none;
+    }
+
+    #dialog-box.active {
+      display: block;
+    }
+
+    .dialog-speaker {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.16em;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .dialog-text {
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--parchment);
+    }
+
+    .dialog-continue {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      color: var(--aged);
+      text-align: right;
+      margin-top: 0.6rem;
+      letter-spacing: 0.12em;
+      animation: blink 1.2s step-end infinite;
+      pointer-events: all;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Item popup */
+    #item-popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10, 8, 6, 0.97);
+      border: 1px solid rgba(184, 146, 42, 0.35);
+      border-top: 2px solid var(--gold);
+      padding: 2rem 2.5rem;
+      text-align: center;
+      z-index: 30;
+      display: none;
+      animation: popIn 0.35s ease;
+      max-width: 90vw;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+      }
+
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    #item-popup.active {
+      display: block;
+    }
+
+    .item-popup-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .item-popup-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.08em;
+    }
+
+    .item-popup-desc {
+      font-size: 0.9rem;
+      color: rgba(232, 213, 163, 0.7);
+      margin-bottom: 1.2rem;
+      font-style: italic;
+    }
+
+    .btn-item-ok {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: var(--gold);
+      border: none;
+      padding: 0.6em 1.8em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-item-ok:hover {
+      background: var(--gold-hi);
+    }
+
+    /* Teleport menu */
+    #teleport-menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10, 8, 6, 0.96);
+      border: 1px solid rgba(184, 146, 42, 0.3);
+      border-top: 2px solid var(--gold);
+      padding: 2rem 2.5rem;
+      z-index: 35;
+      display: none;
+      min-width: 300px;
+      max-width: 90vw;
+      animation: popIn 0.3s ease;
+    }
+
+    #teleport-menu.active {
+      display: block;
+    }
+
+    .teleport-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      text-align: center;
+    }
+
+    .teleport-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .teleport-option {
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      color: var(--parchment);
+      background: none;
+      border: none;
+      border-left: 2px solid transparent;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s;
+      text-transform: uppercase;
+    }
+
+    .teleport-option:hover {
+      border-left-color: var(--gold);
+      color: var(--gold-hi);
+      background: rgba(184, 146, 42, 0.06);
+    }
+
+    .teleport-option.locked {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .teleport-option.locked:hover {
+      border-left-color: transparent;
+      color: var(--parchment);
+      background: none;
+    }
+
+    .btn-close-teleport {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--aged);
+      background: none;
+      border: none;
+      border-top: 1px solid rgba(184, 146, 42, 0.2);
+      padding-top: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .btn-close-teleport:hover {
+      color: var(--parchment);
+    }
+
+    /* Minimap */
+    #minimap {
+      position: absolute;
+      top: 4.5rem;
+      right: 1rem;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 1px solid rgba(184, 146, 42, 0.4);
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════════════════
+     PUZZLE / RUNE WELL
+  ══════════════════════════════════════════ */
+    #screen-puzzle {
+      background: radial-gradient(ellipse at 50% 50%, #0b1a2c 0%, #050b14 100%);
+      padding: 2rem 1rem;
+    }
+
+    .puzzle-container {
+      max-width: 560px;
+      width: 94%;
+      text-align: center;
+    }
+
+    .puzzle-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+      color: var(--rune);
+      text-shadow: 0 0 20px var(--rune);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.1em;
+    }
+
+    .puzzle-seal-text {
+      font-size: 0.95rem;
+      color: rgba(232, 213, 163, 0.6);
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .rune-display {
+      display: inline-flex;
+      gap: 0.6rem;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      letter-spacing: 0.2em;
+      margin-bottom: 2rem;
+      color: var(--rune);
+      text-shadow: 0 0 16px var(--rune);
+      animation: runeGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes runeGlow {
+
+      0%,
+      100% {
+        text-shadow: 0 0 16px var(--rune);
+      }
+
+      50% {
+        text-shadow: 0 0 32px #82c0ff, 0 0 8px #fff;
+      }
+    }
+
+    .rune-char {
+      transition: all 0.4s;
+    }
+
+    .rune-char.revealed {
+      color: var(--gold);
+      text-shadow: 0 0 20px var(--gold);
+    }
+
+    .puzzle-input-row {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .puzzle-letter-input {
+      width: clamp(2.5rem, 8vw, 3.2rem);
+      height: clamp(2.5rem, 8vw, 3.2rem);
+      background: rgba(74, 122, 170, 0.1);
+      border: 1px solid var(--rune);
+      border-radius: 2px;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: var(--parchment);
+      text-transform: uppercase;
+      caret-color: var(--rune);
+    }
+
+    .puzzle-letter-input:focus {
+      outline: none;
+      border-color: #82c0ff;
+      box-shadow: 0 0 10px rgba(74, 122, 170, 0.4);
+    }
+
+    #btn-check-rune {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: linear-gradient(135deg, var(--rune) 0%, #82c0ff 100%);
+      border: none;
+      padding: 0.7em 2em;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    #btn-check-rune:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 16px rgba(74, 122, 170, 0.5);
+    }
+
+    #puzzle-feedback {
+      margin-top: 1rem;
+      min-height: 1.5rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.88rem;
+      letter-spacing: 0.08em;
+    }
+
+    #puzzle-feedback.ok {
+      color: #7ecb8d;
+      text-shadow: 0 0 12px #7ecb8d;
+    }
+
+    #puzzle-feedback.err {
+      color: var(--ember);
+    }
+
+    /* XP Toast */
+    .xp-toast {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      color: var(--gold);
+      text-shadow: 0 0 30px var(--gold);
+      pointer-events: none;
+      z-index: 100;
+      animation: xpFly 1.8s ease-out forwards;
+    }
+
+    @keyframes xpFly {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -70%) scale(1.2);
+      }
+
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -120%) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(0.9);
+      }
+    }
+
+    /* Damage flash */
+    .damage-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(160, 32, 32, 0.28);
+      pointer-events: none;
+      z-index: 99;
+      animation: flashOut 0.5s ease forwards;
+    }
+
+    @keyframes flashOut {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+
+    /* Fade overlay */
+    #fade-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 200;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s;
+    }
+
+    #fade-overlay.fade-in {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Loading */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0a0806;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+    }
+
+    #loading-overlay.hidden {
+      display: none;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(184, 146, 42, 0.15);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      color: var(--aged);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    /* Sello screens */
+    .diary-word {
+      cursor: pointer;
+      border-bottom: 2px solid #a02020;
+      color: #f09595;
+      transition: all 0.3s;
+      padding: 0 2px;
+    }
+
+    .diary-word.fixed {
+      border-bottom: 2px solid #7ecb8d;
+      color: #7ecb8d;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .echo-btn {
+      font-family: 'Crimson Text', serif;
+      font-size: 1rem;
+      color: var(--parchment);
+      background: rgba(74, 122, 170, 0.06);
+      border: 1px solid rgba(74, 122, 170, 0.3);
+      border-radius: 2px;
+      padding: 0.9rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.22s;
+      text-align: left;
+    }
+
+    .echo-btn:hover {
+      background: rgba(74, 122, 170, 0.16);
+      border-color: #5b8fb9;
+    }
+
+    .echo-btn.correct-choice {
+      border-color: #7ecb8d;
+      background: rgba(126, 203, 141, 0.1);
+      color: #7ecb8d;
+    }
+
+    .echo-btn.wrong-choice {
+      border-color: #a02020;
+      background: rgba(160, 32, 32, 0.1);
+      color: #f09595;
+      pointer-events: none;
+    }
+
+    .flying-word {
+      position: absolute;
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.4em 0.9em;
+      border-radius: 2px;
+      border: 1px solid #7700cc;
+      background: rgba(119, 0, 204, 0.1);
+      color: var(--parchment);
+      transition: background 0.2s;
+      user-select: none;
+      letter-spacing: 0.06em;
+    }
+
+    .flying-word:hover {
+      background: rgba(119, 0, 204, 0.28);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body>
+
+  <!-- HUD GLOBAL -->
+  <div id="hud">
+    <div id="hud-bar">
+      <div id="health-container">
+        <div class="health-label">Vida</div>
+        <div id="health-track">
+          <div id="health-fill" style="width:100%;"></div>
+        </div>
+        <div id="health-text">100 / 100</div>
+      </div>
+
+      <div class="hud-xp" id="hud-xp">XP: 0</div>
+      <div class="hud-name" id="hud-name">Verbalia</div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Invocando el Grimorio</div>
+  </div>
+
+  <!-- Fade -->
+  <div id="fade-overlay"></div>
+
+  <!-- ══════════════════════════════════════════
+     SCREEN 1 – TITLE
+══════════════════════════════════════════ -->
+  <div id="screen-title" class="screen">
+    <div id="title-bg"></div>
+
+    <div id="title-content">
+      <!-- Sigil SVG -->
+      <svg id="title-sigil" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <circle cx="18" cy="18" r="16" stroke="#b8922a" stroke-width="0.8" opacity="0.6" />
+        <polygon points="18,5 21.5,14.5 31.5,14.5 23.5,20.5 26.5,30 18,24 9.5,30 12.5,20.5 4.5,14.5 14.5,14.5"
+          stroke="#b8922a" stroke-width="0.8" opacity="0.7" />
+      </svg>
+
+      <div class="title-eyebrow">Recurso educativo · Lecto-escritura</div>
+
+      <h1 class="game-title">VERBALIA</h1>
+      <h2 class="game-subtitle">El Grimorio Olvidado</h2>
+
+      <div class="title-line"></div>
+
+      <div class="title-actions">
+        <button class="btn-title btn-title-primary" id="btn-start">Comenzar aventura</button>
+        <button class="btn-title btn-title-secondary" id="btn-info">Informacion</button>
+      </div>
+    </div>
+
+    <!-- Sound -->
+    <button id="btn-sound" title="Silenciar / activar sonido">&#9834;</button>
+
+    <!-- Info panel -->
+    <div id="info-panel">
+      <button id="btn-close-info">Cerrar</button>
+
+      <div class="info-section">
+        <div class="info-section-label">Descripcion</div>
+        <p>Aventura RPG 3D donde restaurar palabras es el poder magico que salva el reino. Explora pueblos, bosques y
+          templos resolviendo desafios ortograficos.</p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-label">Proposito de aprendizaje</div>
+        <ul>
+          <li>Fortalecer la conciencia ortografica</li>
+          <li>Ampliar el vocabulario activo</li>
+          <li>Comprender el uso correcto de tildes y letras</li>
+          <li>Desarrollar la comprension lectora</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-label">Poblacion dirigida</div>
+        <p>Estudiantes de primaria y secundaria, entre 8 y 14 años de edad.</p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-label">Controles</div>
+        <ul>
+          <li><span class="key-tag">W A S D</span> — Moverse</li>
+          <li><span class="key-tag">Shift</span> — Correr</li>
+          <li><span class="key-tag">Espacio</span> — Saltar</li>
+          <li><span class="key-tag">E</span> — Interactuar</li>
+          <li><span class="key-tag">V</span> — Cambiar camara</li>
+          <li><span class="key-tag">T</span> — Teletransporte</li>
+          <li><span class="key-tag">Mouse</span> — Rotar camara</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-label">Objetivo</div>
+        <p>Recupera las palabras robadas por Morgalix, restaura los sellos magicos del reino y devuelve el equilibrio al
+          lenguaje. Cada palabra correcta es un hechizo que fortalece tu grimorio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SCREEN 2 – CINEMATIC
+══════════════════════════════════════════ -->
+  <div id="screen-cinematic" class="screen">
+    <video id="cinematic-video" preload="auto" playsinline>
+      <source src="assets/cinematics/cinematic.mp4" type="video/mp4">
+    </video>
+    <button id="btn-skip-cinematic">Omitir</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SCREEN 3 – CHARACTER SELECT
+══════════════════════════════════════════ -->
+  <div id="screen-charselect" class="screen">
+    <!-- 3D background scene -->
+    <canvas id="charselect-scene"></canvas>
+
+    <!-- Left: character info + navigation -->
+    <div id="char-left-panel">
+      <div class="char-panel-label">Selecciona tu heroe</div>
+      <div class="char-panel-name" id="char-panel-name">Moon</div>
+      <div class="char-panel-class" id="char-panel-class">Exploradora de sombras</div>
+
+      <div class="char-nav">
+        <button class="char-nav-btn" id="char-prev">&#8592;</button>
+        <button class="char-nav-btn" id="char-next">&#8594;</button>
+      </div>
+
+      <button class="btn-title btn-title-primary" id="btn-confirm-char" disabled
+        style="border:1px solid rgba(184,146,42,0.4); padding:0.6em 1.5em; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.2em; color:var(--parchment); background:none;">
+        Elegir heroe
+      </button>
+    </div>
+
+
+    <div>
+      <div class="custom-group-label">Color de traje</div>
+      <div class="color-swatches" id="swatches-outfit">
+        <div class="swatch active" data-type="outfit" data-index="0" style="background:#1a1a1a;" title="Noche"></div>
+        <div class="swatch" data-type="outfit" data-index="1" style="background:#1a3550;" title="Oceano"></div>
+        <div class="swatch" data-type="outfit" data-index="2" style="background:#3a1a00;" title="Tierra"></div>
+        <div class="swatch" data-type="outfit" data-index="3" style="background:#2a1a3a;" title="Sombra"></div>
+        <div class="swatch" data-type="outfit" data-index="4" style="background:#1a3a1a;" title="Bosque"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SCREEN 4 – GAME
+══════════════════════════════════════════ -->
+  <div id="screen-game" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+
+
+    <canvas id="minimap" width="160" height="160"></canvas>
+
+    <div id="pointer-resume-hint"><span>Click para continuar</span></div>
+
+
+    <div id="objective-banner">
+      <div class="obj-label">Objetivo</div>
+      <div class="obj-text" id="objective-text">Dirijete al pueblo y encuentra al Informante</div>
+    </div>
+
+    <div id="controls-hint">
+      <div class="ctrl-key"><kbd>WASD</kbd>Moverse</div>
+      <div class="ctrl-key"><kbd>E</kbd>Interactuar</div>
+      <div class="ctrl-key"><kbd>Shift</kbd>Correr</div>
+      <div class="ctrl-key"><kbd>Espacio</kbd>Saltar</div>
+      <div class="ctrl-key"><kbd>T</kbd>Viajar</div>
+      <div class="ctrl-key"><kbd>V</kbd>Camara</div>
+    </div>
+
+    <div id="dialog-box">
+      <div class="dialog-speaker" id="dialog-speaker">Anciana Guardiana</div>
+      <div class="dialog-text" id="dialog-text"></div>
+      <div class="dialog-continue" id="dialog-continue" onclick="advanceDialog()">Continuar</div>
+    </div>
+
+    <div id="item-popup">
+      <div class="item-popup-icon">&#128213;</div>
+      <div class="item-popup-name">Grimorio Vacio</div>
+      <div class="item-popup-desc">Un libro de hechizos que espera ser completado con palabras de poder.</div>
+      <button class="btn-item-ok" onclick="closeItemPopup()">Guardar en mochila</button>
+    </div>
+
+    <!-- Teleport menu -->
+    <div id="teleport-menu">
+      <div class="teleport-title">Viajar a</div>
+      <ul class="teleport-list">
+        <!-- DESPUES -->
+        <li><button class="teleport-option" onclick="teleportTo('village')">Pueblo nevado</button></li>
+        <li><button class="teleport-option teleport-needs-unlock" data-dest="forest"
+            onclick="teleportTo('forest')">Aserradero del bosque</button></li>
+        <li><button class="teleport-option teleport-needs-unlock" data-dest="river"
+            onclick="teleportTo('river')">Rio</button></li>
+        <li><button class="teleport-option teleport-needs-unlock" data-dest="lake"
+            onclick="teleportTo('lake')">Lago</button></li>
+      </ul>
+      <button class="btn-close-teleport" onclick="closeTeleportMenu()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SCREEN 5 – RUNE PUZZLE
+══════════════════════════════════════════ -->
+  <div id="screen-puzzle" class="screen">
+    <div class="puzzle-container">
+      <div class="puzzle-title">El Pozo Sellado</div>
+      <div class="puzzle-seal-text">El sello magico esta incompleto. Restaura la palabra perdida.</div>
+      <div class="rune-display" id="rune-display">
+        <span class="rune-char" id="r0">?</span>
+        <span class="rune-char" id="r1">?</span>
+        <span class="rune-char" id="r2">U</span>
+        <span class="rune-char" id="r3">A</span>
+      </div>
+      <div style="color:var(--aged); font-size:0.82rem; margin-bottom:0.5rem; letter-spacing:0.05em;">
+        Completa los caracteres que faltan:
+      </div>
+      <div class="puzzle-input-row">
+        <input class="puzzle-letter-input" id="pl0" maxlength="1" placeholder="?" autocomplete="off" spellcheck="false">
+        <input class="puzzle-letter-input" id="pl1" maxlength="1" placeholder="?" autocomplete="off" spellcheck="false">
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <span style="font-family:'Cinzel',serif;font-size:1.6rem;color:var(--rune);letter-spacing:0.1em;">U A</span>
+        </div>
+      </div>
+      <button id="btn-check-rune" onclick="checkRune()">Restaurar Sello</button>
+      <div id="puzzle-feedback"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SELLO 1
+══════════════════════════════════════════ -->
+  <div id="screen-sello1" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#1a0f04 0%,#060302 100%);padding:2rem 1rem;">
+    <div style="max-width:600px;width:94%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#b8922a;margin-bottom:.4rem;letter-spacing:0.1em;">
+        Sello I — El Diario del Escriba
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.5rem;font-style:italic;">
+        Toca las palabras que necesitan correccion ortografica
+      </div>
+      <div id="diary-page" style="
+      background:rgba(232,213,163,.06);
+      border:1px solid rgba(184,146,42,0.3);
+      border-top:2px solid #b8922a;
+      padding:1.5rem 2rem;
+      font-size:1.15rem;
+      line-height:2.4;
+      color:var(--parchment);
+      font-family:'Crimson Text',serif;
+      margin-bottom:1.5rem;
+    ">
+        Ayer <span class="diary-word wrong" data-correct="visite" onclick="fixWord(this)">visite</span>
+        el bosque y
+        <span class="diary-word wrong" data-correct="encontre" onclick="fixWord(this)">encontre</span>
+        una criatura
+        <span class="diary-word wrong" data-correct="extrana" onclick="fixWord(this)">extrana</span>.
+      </div>
+      <div id="sello1-feedback"
+        style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;margin-bottom:1rem;"></div>
+      <div id="sello1-progress"
+        style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--aged);letter-spacing:.14em;">
+        Correcciones: 0 / 3
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SELLO 2
+══════════════════════════════════════════ -->
+  <div id="screen-sello2" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#0b0a1e 0%,#050412 100%);padding:2rem 1rem;">
+    <div style="max-width:600px;width:94%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#4a7aaa;margin-bottom:.4rem;letter-spacing:0.1em;">
+        Sello II — La Habitacion de los Ecos
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:2rem;font-style:italic;">
+        Solo una frase mantiene el sentido original. Elige con sabiduria.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem;" id="echo-options">
+        <button class="echo-btn" onclick="checkEcho(this,'wrong')">
+          A) El guardian reveló el secreto.
+        </button>
+        <button class="echo-btn" onclick="checkEcho(this,'wrong')">
+          B) El guardian rebelo el secreto.
+        </button>
+        <button class="echo-btn" onclick="checkEcho(this,'correct')">
+          C) El guardian revelo el secreto.
+        </button>
+      </div>
+      <div id="sello2-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     SELLO 3
+══════════════════════════════════════════ -->
+  <div id="screen-sello3" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#0d001a 0%,#050008 100%);padding:2rem 1rem;overflow:hidden;">
+    <div style="max-width:600px;width:94%;text-align:center;position:relative;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#7700cc;margin-bottom:.4rem;letter-spacing:0.1em;">
+        Sello III — El Grimorio Viviente
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.5rem;font-style:italic;">
+        Atrapa la palabra correcta antes de que escape
+      </div>
+      <div style="
+      background:rgba(119,0,204,.07);
+      border:1px solid rgba(119,0,204,0.35);
+      border-top:2px solid #7700cc;
+      padding:1.2rem 1.5rem;
+      font-size:1.1rem;
+      color:var(--parchment);
+      font-family:'Crimson Text',serif;
+      margin-bottom:2rem;
+    ">
+        La magia desaparecio porque todos <span style="color:#7700cc;font-weight:bold;">______</span> las palabras.
+      </div>
+      <div id="flying-words" style="position:relative;height:200px;margin-bottom:1rem;"></div>
+      <div id="sello3-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+    </div>
+  </div>
+
+  <div id="screen-sello4" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#1a0f04 0%,#060302 100%);padding:2rem 1rem;">
+    <div style="max-width:580px;width:94%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#b8922a;margin-bottom:.4rem;letter-spacing:0.1em;">
+        El Yunque Roto
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.8rem;font-style:italic;">
+        Restaura las palabras del manual del herrero para reparar el yunque
+      </div>
+
+      <div style="
+            background:rgba(232,213,163,.06);
+            border:1px solid rgba(184,146,42,0.3);
+            border-top:2px solid #b8922a;
+            padding:1.5rem 2rem;
+            font-size:1.2rem;
+            line-height:2;
+            color:var(--parchment);
+            font-family:'Crimson Text',serif;
+            margin-bottom:1.8rem;
+          ">
+        <span id="sello4-sentence"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem;">
+        <button class="s4-option echo-btn"></button>
+        <button class="s4-option echo-btn"></button>
+        <button class="s4-option echo-btn"></button>
+      </div>
+
+      <div id="sello4-feedback"
+        style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;margin-bottom:.8rem;"></div>
+      <div id="sello4-progress"
+        style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--aged);letter-spacing:.14em;">
+        Pregunta 1 de 3
+      </div>
+    </div>
+  </div>
+
+  <!-- RIVER CHALLENGE 1 -->
+  <div id="screen-river1" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#041a2e 0%,#020a14 100%);padding:2rem 1rem;">
+    <div style="max-width:580px;width:94%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#4a9aaa;margin-bottom:.4rem;letter-spacing:0.1em;">
+        Guardián I — El Sellador del Río
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.4rem;font-style:italic;">
+        El grimorio dice: "El héroe _____ al río al amanecer."
+      </div>
+      <div style="
+      background:rgba(74,122,170,.07);
+      border:1px solid rgba(74,122,170,0.3);
+      border-top:2px solid #4a9aaa;
+      padding:1rem 1.4rem;
+      font-size:1.05rem;
+      color:var(--parchment);
+      font-family:'Crimson Text',serif;
+      margin-bottom:1.6rem;
+    ">
+        Las palabras agudas llevan tilde cuando terminan en <strong style="color:#4a9aaa">vocal, n o s</strong>.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.2rem;" id="r1-options">
+        <button class="echo-btn" id="r1-btn0">A) llego</button>
+        <button class="echo-btn" id="r1-btn1">B) llegó</button>
+        <button class="echo-btn" id="r1-btn2">C) llégó</button>
+      </div>
+      <div id="river1-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+    </div>
+  </div>
+
+  <!-- RIVER CHALLENGE 2 -->
+  <div id="screen-river2" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#041a2e 0%,#020a14 100%);padding:2rem 1rem;">
+    <div style="max-width:580px;width:94%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#4a9aaa;margin-bottom:.4rem;letter-spacing:0.1em;">
+        Guardián II — El Pícaro del Río
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.4rem;font-style:italic;">
+        Morgalix robó la tilde del conjuro: "El escriba no _____ cómo sellar el grimorio."
+      </div>
+      <div style="
+      background:rgba(74,122,170,.07);
+      border:1px solid rgba(74,122,170,0.3);
+      border-top:2px solid #4a9aaa;
+      padding:1rem 1.4rem;
+      font-size:1.05rem;
+      color:var(--parchment);
+      font-family:'Crimson Text',serif;
+      margin-bottom:1.6rem;
+    ">
+        <strong style="color:#4a9aaa">sabía</strong> es aguda terminada en vocal → lleva tilde.<br>
+        <strong style="color:#4a9aaa">sabia</strong> sin tilde significa 'mujer sabia'.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.2rem;" id="r2-options">
+        <button class="echo-btn" id="r2-btn0">A) sabia</button>
+        <button class="echo-btn" id="r2-btn1">B) sabía</button>
+        <button class="echo-btn" id="r2-btn2">C) sábia</button>
+      </div>
+      <div id="river2-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+    </div>
+  </div>
+
+  <!-- RIVER CHALLENGE 3 -->
+  <div id="screen-river3" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#041a2e 0%,#020a14 100%);padding:2rem 1rem;">
+    <div style="max-width:580px;width:94%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#4a9aaa;margin-bottom:.4rem;letter-spacing:0.1em;">
+        Guardián III — El Súbdito del Río
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.4rem;font-style:italic;">
+        El último sello dice: "En el bosque hay un _____ mágico que Morgalix no puede cortar."
+      </div>
+      <div style="
+      background:rgba(74,122,170,.07);
+      border:1px solid rgba(74,122,170,0.3);
+      border-top:2px solid #4a9aaa;
+      padding:1rem 1.4rem;
+      font-size:1.05rem;
+      color:var(--parchment);
+      font-family:'Crimson Text',serif;
+      margin-bottom:1.6rem;
+    ">
+        Las palabras llanas llevan tilde cuando <strong style="color:#4a9aaa">NO</strong> terminan en vocal, n o s.<br>
+        <em>árbol</em> termina en L → lleva tilde. <em>arbol</em> sin tilde es incorrecto.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.2rem;" id="r3-options">
+        <button class="echo-btn" id="r3-btn0">A) arbol</button>
+        <button class="echo-btn" id="r3-btn1">B) Árbol</button>
+        <button class="echo-btn" id="r3-btn2">C) arból</button>
+      </div>
+      <div id="river3-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+    </div>
+  </div>
+
+  <div id="screen-witch-trial" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#0a1f1a 0%,#020806 100%);padding:2rem 1rem;">
+    <div class="puzzle-container">
+      <div class="puzzle-title" style="color:#5fcf9a;text-shadow:0 0 20px #5fcf9a;">El Hechizo del Lago</div>
+      <div class="puzzle-seal-text" id="witch-riddle-text"></div>
+      <div class="rune-display" id="witch-rune-display" style="color:#5fcf9a;text-shadow:0 0 16px #5fcf9a;"></div>
+      <div style="color:var(--aged);font-size:.82rem;margin-bottom:.5rem;">Completa las letras que faltan:</div>
+      <div class="puzzle-input-row" id="witch-input-row"></div>
+      <button id="btn-check-witch" onclick="checkWitchTrial()"
+        style="font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:linear-gradient(135deg,#5fcf9a 0%,#8fe8c0 100%);border:none;padding:.7em 2em;cursor:pointer;margin-top:.5rem;">
+        Pronunciar el Hechizo
+      </button>
+      <div id="witch-feedback" style="margin-top:1rem;min-height:1.5rem;font-family:'Cinzel',serif;font-size:.88rem;">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════
+    //  STATE
+    // ═══════════════════════════════════════════════════════════
+    let worldMesh = null;
+    let fogWalls = [];
+    let collidableMeshes = [];
+    let currentMap = 'village';
+    let minimapBgCanvas = null;
+    let soundEnabled = true;
+    let runeSolved = false;
+    let selectedChar = null;
+    let teleportCooldown = false;
+    let xp = 0;
+    let hp = 100;
+    const HP_MAX = 100;
+    const HP_WRONG_PENALTY = 20;
+    let dialogQueue = [];
+    let dialogIndex = 0;
+    let dialogCallback = null;
+    let gamePhase = 'explore';
+    let hasGrimoire = false;
+    let wellActivated = false;
+    let ancianaTalked = false;
+    let anciana2Talked = false;
+    let bgMusic, cinematicAudio;
+    let currentObjective = { x: -27.5, z: -39.5 };
+    let riverGuardian1Talked = false;
+    let riverGuardian2Talked = false;
+    let riverGuardian3Talked = false;
+    let riverGuardian1Done = false;
+    let riverGuardian2Done = false;
+    let riverGuardian3Done = false;
+    let skeleton2Mesh = null;
+    let skeleton3Mesh = null;
+    let witchMesh = null;
+    let witchTalked = false;
+    let witchTrialStage = 0;
+    let lakeVillagerMesh = null;
+    let lakeVillagerTalked = false;
+    let patrolNPCs = []; // NPCs que caminan en patrulla por waypoints
+
+    // Destination map files
+    const MAP_FILES = {
+      village: 'assets/models/world/Village_Snow.glb',
+      forest: 'assets/models/world/LumberMill_Snow.glb',
+      farm: 'assets/models/world/Farm.glb',
+      river: 'assets/models/world/River_snow.glb',
+      market: 'assets/models/world/market.glb',
+      lake: 'assets/models/world/Fishing.glb',
+    };
+
+    // Map display names
+    const MAP_NAMES = {
+      village: 'Pueblo nevado',
+      forest: 'Aserradero del bosque',
+      farm: 'Granja',
+      river: 'Rio',
+      market: 'Mercado',
+      lake: 'Lago',
+    };
+
+    // Map spawn positions
+    const MAP_SPAWNS = {
+      village: { x: -62.8, y: 0.04, z: 32.7 },
+      forest: { x: 15, y: -0.04, z: -10 },
+      farm: { x: 0, y: 0, z: 0 },
+      river: { x: 23.82, y: 5.14, z: -64.94 },
+      market: { x: 0, y: 0, z: 0 },
+      lake: { x: -58.78, y: -0.09, z: 166.36 },
+    };
+
+    const MAP_BOUNDS = { minX: -220, maxX: 160, minZ: -200, maxZ: 80 };
+    const unlockedMaps = new Set(['village']);
+
+    const WELL_EDGES = [
+      { x1: -25.3, z1: -41.6, x2: -27.4, z2: -41.2 },
+      { x1: -27.4, z1: -41.2, x2: -29.0, z2: -38.2 },
+      { x1: -29.0, z1: -38.2, x2: -27.5, z2: -36.5 },
+      { x1: -27.5, z1: -36.5, x2: -24.6, z2: -36.6 },
+      { x1: -24.6, z1: -36.6, x2: -25.3, z2: -41.6 },
+    ];
+
+    const BLOCKED_ZONES = [
+      { cx: -125.5, cz: -62.4 },
+      { cx: -131.2, cz: -105.4 },
+      { cx: -195.2, cz: -98.4 },
+      { cx: -197.0, cz: -57.5 },
+      { cx: -162.8, cz: -62.7 },
+    ];
+
+    const PASSTHROUGH_PREFIXES = [
+      'TB_Env_Grass', 'TB_Env_Flower', 'TB_Env_Bloom', 'TB_Prop_Straw',
+      'TB_Prop_Cabbage', 'TB_Prop_Carrot', 'TB_Prop_Kohlrabi', 'TB_Prop_Daikon',
+      'TB_Prop_Apple', 'TB_Prop_Lemon', 'TB_Prop_Watermelon', 'TB_Prop_Pumpkin',
+      'TB_Prop_Shrimp', 'TB_Prop_Shell', 'TB_Prop_Fish', 'TB_Prop_Candle',
+      'TB_Prop_Muffin', 'TB_Prop_Bread', 'TB_Prop_Baguette', 'TB_Prop_Loundry',
+      'TB_Env_Mushrm', 'TB_Prop_Knife', 'TB_Prop_Fork', 'TB_Prop_Spoon',
+      'TB_Prop_Flag', 'TB_Prop_Dish', 'TB_Prop_Jam',
+      'TB_Prop_Sausage', 'TB_Prop_Long_Sausage', 'TB_Prop_Meat',
+    ];
+
+    function isSolid(name) {
+      return !PASSTHROUGH_PREFIXES.some(p => name.startsWith(p));
+    }
+
+    function collectCollidables(root) {
+      const list = [];
+      root.traverse(child => {
+        if (child.isMesh && isSolid(child.name || '')) list.push(child);
+      });
+      return list;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  HEALTH SYSTEM
+    // ═══════════════════════════════════════════════════════════
+    function takeDamage(amount) {
+      hp = Math.max(0, hp - amount);
+      updateHealthBar();
+      showDamageFlash();
+      if (hp <= 0) handleDeath();
+    }
+
+
+    function healPlayer(amount) {
+      hp = Math.min(HP_MAX, hp + amount);
+      updateHealthBar();
+    }
+
+    function updateHealthBar() {
+      const pct = (hp / HP_MAX) * 100;
+      const fill = document.getElementById('health-fill');
+      const text = document.getElementById('health-text');
+      if (fill) fill.style.width = pct + '%';
+      if (text) text.textContent = hp + ' / ' + HP_MAX;
+      // Color shift
+      fill.style.animation = '';   // ← limpia siempre primero
+      if (pct > 60) {
+        fill.style.background = 'linear-gradient(to right, #8b1a1a, #c0392b, #e74c3c)';
+      } else if (pct > 30) {
+        fill.style.background = 'linear-gradient(to right, #8b5a00, #d4870a, #f0a820)';
+      } else {
+        fill.style.background = 'linear-gradient(to right, #4a0000, #a00000, #ff3333)';
+        fill.style.animation = 'blink 0.8s step-end infinite';
+      }
+    }
+
+    function showDamageFlash() {
+      const el = document.createElement('div');
+      el.className = 'damage-flash';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 600);
+    }
+    // DESPUÉS — reemplazar por esto:
+    function handleDeath() {
+      gamePhase = 'dialog';
+
+      const fade = document.getElementById('fade-overlay');
+      fade.classList.add('fade-in');
+
+      setTimeout(() => {
+        // 1. Asegurarse que screen-game está activa ANTES de mostrar el diálogo
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-game').classList.add('active');
+        document.getElementById('hud').style.display = 'block';
+
+        // 2. Restaurar vida y posición inmediatamente
+        hp = HP_MAX;
+        updateHealthBar();
+        const spawn = MAP_SPAWNS[currentMap] || { x: 0, z: 0 };
+        if (playerMesh) playerMesh.position.set(spawn.x, 5, spawn.z);
+
+        // 3. Quitar el fade manualmente (sin pasar por showScreen)
+        fade.classList.remove('fade-in');
+
+        // 4. Mostrar diálogo de muerte
+        dialogQueue = [
+          { speaker: 'Grimorio', text: 'Tus palabras se han desvanecido...' },
+          { speaker: 'Grimorio', text: 'El silencio te envuelve...' },
+          { speaker: 'Grimorio', text: 'Pero el destino puede reescribirse.' },
+          { speaker: 'Grimorio', text: 'Regresa al origen… y continúa.' },
+        ];
+        dialogIndex = 0;
+        dialogCallback = () => { gamePhase = 'explore'; };
+        showDialog();
+
+      }, 700);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  MINIMAP
+    // ═══════════════════════════════════════════════════════════
+    const MINIMAP_FULL_SIZE = 1024;
+
+    function worldToMinimap(x, z, size) {
+      const nx = (x - MAP_BOUNDS.minX) / (MAP_BOUNDS.maxX - MAP_BOUNDS.minX);
+      const nz = (z - MAP_BOUNDS.minZ) / (MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ);
+      return { x: nx * size, y: size - nz * size };
+    }
+
+    function buildMinimapBackground() {
+      if (!worldMesh) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = MINIMAP_FULL_SIZE; canvas.height = MINIMAP_FULL_SIZE;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#1a1408';
+      // DESPUES
+      ctx.fillStyle = '#2a2418';  // fondo más claro para que haga contraste
+      ctx.fillRect(0, 0, MINIMAP_FULL_SIZE, MINIMAP_FULL_SIZE);
+      worldMesh.updateMatrixWorld(true);
+      const mapW = MAP_BOUNDS.maxX - MAP_BOUNDS.minX;
+      const mapH = MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ;
+      function toMiniPx(wx, wz) {
+        return {
+          x: ((wx - MAP_BOUNDS.minX) / mapW) * MINIMAP_FULL_SIZE,
+          y: ((wz - MAP_BOUNDS.minZ) / mapH) * MINIMAP_FULL_SIZE,
+        };
+      }
+      const v0 = new THREE.Vector3(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3();
+      worldMesh.traverse((child) => {
+        if (!child.isMesh) return;
+        const name = child.name || '';
+        let color = 'rgba(200,180,140,0.95)';  // piso casi opaco, bien visible
+        if (name.startsWith('TB_Bd_')) color = 'rgba(220,200,150,1)';
+        if (name.startsWith('TB_Env_Tree') || name.startsWith('TB_Env_Pine')) color = 'rgba(70,120,60,1)';
+        if (!isSolid(name)) return;
+        const geo = child.geometry;
+        if (!geo.attributes.position) return;
+        const pos = geo.attributes.position, idx = geo.index;
+        ctx.fillStyle = color;
+        const count = idx ? idx.count : pos.count;
+        for (let i = 0; i < count; i += 3) {
+          const i0 = idx ? idx.getX(i) : i;
+          const i1 = idx ? idx.getX(i + 1) : i + 1;
+          const i2 = idx ? idx.getX(i + 2) : i + 2;
+          v0.fromBufferAttribute(pos, i0).applyMatrix4(child.matrixWorld);
+          v1.fromBufferAttribute(pos, i1).applyMatrix4(child.matrixWorld);
+          v2.fromBufferAttribute(pos, i2).applyMatrix4(child.matrixWorld);
+          const p0 = toMiniPx(v0.x, v0.z), p1 = toMiniPx(v1.x, v1.z), p2 = toMiniPx(v2.x, v2.z);
+          ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+          ctx.closePath(); ctx.fill();
+        }
+      });
+      minimapBgCanvas = canvas;
+    }
+
+
+    function getNPCsForCurrentMap() {
+      if (currentMap === 'village') {
+        return [
+          { npc: barbarianMesh, color: '#00ff88' },
+          { npc: ancianaMesh, color: '#ffaa00' }
+        ];
+      }
+      if (currentMap === 'forest') {
+        return [
+          { npc: skeletonMesh, color: '#ff4444' }
+        ];
+      }
+      // DESPUES
+      if (currentMap === 'river') {
+        return [
+          { npc: skeletonMesh, color: '#ff4444' },
+          { npc: skeleton2Mesh, color: '#aa44ff' },
+          { npc: skeleton3Mesh, color: '#4444ff' },
+        ];
+      }
+      if (currentMap === 'lake') {
+        return [
+          { npc: witchMesh, color: '#5fcf9a' },
+        ];
+      }
+      return [];
+    }
+
+    function renderMinimap() {
+      const canvas = document.getElementById('minimap');
+      if (!canvas || !playerMesh) return;
+
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      const half = size / 2;
+
+      ctx.clearRect(0, 0, size, size);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(half, half, half, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.fillStyle = '#1a1408';
+      ctx.fillRect(0, 0, size, size);
+
+      if (minimapBgCanvas) {
+        const mapW = MAP_BOUNDS.maxX - MAP_BOUNDS.minX;
+        const mapH = MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ;
+
+        const playerPxX = ((playerMesh.position.x - MAP_BOUNDS.minX) / mapW) * MINIMAP_FULL_SIZE;
+        const playerPxZ = ((playerMesh.position.z - MAP_BOUNDS.minZ) / mapH) * MINIMAP_FULL_SIZE;
+
+        const ZOOM = 3.0;
+        const viewRadius = half * ZOOM;
+
+        ctx.drawImage(
+          minimapBgCanvas,
+          playerPxX - viewRadius,
+          playerPxZ - viewRadius,
+          viewRadius * 2,
+          viewRadius * 2,
+          0,
+          0,
+          size,
+          size
+        );
+
+        // ✅ NPCs en minimapa
+        function drawNPC(npc, color = '#00ff88') {
+          if (!npc) return;
+
+          const npcPxX = ((npc.position.x - MAP_BOUNDS.minX) / mapW) * MINIMAP_FULL_SIZE;
+          const npcPxZ = ((npc.position.z - MAP_BOUNDS.minZ) / mapH) * MINIMAP_FULL_SIZE;
+
+          const relX = ((npcPxX - playerPxX) / viewRadius) * half + half;
+          const relZ = ((npcPxZ - playerPxZ) / viewRadius) * half + half;
+
+          if (relX > 0 && relX < size && relZ > 0 && relZ < size) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(relX, relZ, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        getNPCsForCurrentMap().forEach(({ npc, color }) => {
+          drawNPC(npc, color);
+        });
+
+        // ❌ ELIMINADO: marcador azul del objetivo (no se dibuja nada aquí)
+      }
+
+      ctx.restore();
+
+      // 🔶 Jugador (centro)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(half, half, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#b8922a';
+      ctx.strokeStyle = '#0a0806';
+      ctx.lineWidth = 1.5;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 🔸 Borde circular
+      ctx.strokeStyle = 'rgba(184,146,42,0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(half, half, half - 1, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  AUDIO
+    // ═══════════════════════════════════════════════════════════
+    function initAudio() {
+      bgMusic = new Audio('assets/audio/Ancient Evil Awakens  D&DTTRPG Music  1 Hour.mp3');
+      bgMusic.loop = true; bgMusic.volume = 0.25;
+      cinematicAudio = new Audio('assets/audio/cinematica.mp3');
+      cinematicAudio.volume = 0.7;
+    }
+    function playBgMusic() { if (!soundEnabled || !bgMusic) return; bgMusic.play().catch(() => { }); }
+    function stopBgMusic() { bgMusic && bgMusic.pause(); }
+    function playFx(src, vol = 0.6) {
+      if (!soundEnabled) return;
+      const a = new Audio(src); a.volume = vol; a.play().catch(() => { });
+    }
+    function playImpact() { playFx('assets/audio/Efeitos Sonoros - IMPACTO.mp3', 0.5); }
+    function playAhora() { playFx('assets/audio/AHORA.mp3', 0.5); }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SCREEN MANAGER
+    // ═══════════════════════════════════════════════════════════
+    function showScreen(id) {
+      const overlay = document.getElementById('fade-overlay');
+
+      overlay.classList.add('fade-in');
+
+      setTimeout(() => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+
+        const hud = document.getElementById('hud');
+
+        if (
+          id === 'screen-game' ||
+          id === 'screen-puzzle' ||
+          id === 'screen-sello1' ||
+          id === 'screen-sello2' ||
+          id === 'screen-sello3' ||
+          id === 'screen-sello4' ||
+          id === 'screen-river1' ||
+          id === 'screen-river2' ||
+          id === 'screen-river3'
+        ) {
+          hud.style.display = 'block';
+        } else {
+          hud.style.display = 'none';
+        }
+
+        overlay.classList.remove('fade-in');
+
+        if (id === 'screen-game' && gamePhase === 'explore') {
+          requestPointerLockIfNeeded();
+        }
+      }, 500);
+    }
+
+    function hideLoading() {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  TITLE SCREEN
+    // ═══════════════════════════════════════════════════════════
+    function initTitleScreen() {
+      document.getElementById('btn-start').addEventListener('click', () => {
+        playBgMusic();
+        showScreen('screen-cinematic');
+        startCinematic();
+      });
+
+      document.getElementById('btn-info').addEventListener('click', () => {
+        document.getElementById('info-panel').classList.add('open');
+      });
+
+      document.getElementById('btn-close-info').addEventListener('click', () => {
+        document.getElementById('info-panel').classList.remove('open');
+      });
+
+      document.getElementById('btn-sound').addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        document.getElementById('btn-sound').innerHTML = soundEnabled ? '&#9834;' : '&#9835;';
+        if (soundEnabled) playBgMusic(); else stopBgMusic();
+      });
+
+      initAudio();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  CINEMATIC
+    // ═══════════════════════════════════════════════════════════
+    function startCinematic() {
+      const video = document.getElementById('cinematic-video');
+      stopBgMusic();
+      if (soundEnabled && cinematicAudio) cinematicAudio.play().catch(() => { });
+      video.play().catch(() => { });
+      video.onended = endCinematic;
+      document.getElementById('btn-skip-cinematic').addEventListener('click', endCinematic, { once: true });
+    }
+
+    function endCinematic() {
+      const video = document.getElementById('cinematic-video');
+      video.pause();
+      cinematicAudio && cinematicAudio.pause();
+      playBgMusic();
+      showScreen('screen-charselect');
+      buildCharSelect();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  CHARACTER SELECT — Genshin style
+    // ═══════════════════════════════════════════════════════════
+    const CHARACTERS = [
+      {
+        id: 'Rogue', label: 'Moon',
+        class: 'Exploradora de sombras',
+        file: 'assets/models/characters/Rogue.glb',
+      },
+      {
+        id: 'Ranger', label: 'Sun',
+        class: 'Guardiana del horizonte',
+        file: 'assets/models/characters/Ranger.glb',
+      },
+    ];
+
+    const HAIR_COLORS = [0x1a0a00, 0x8B0000, 0xd4a017, 0xe8d5c4, 0x3a1a6b];
+    const EYE_COLORS = [0x1a2a50, 0x2a6e2a, 0x8B3a00, 0x5a0066];
+    const OUTFIT_COLORS = [0x1a1a1a, 0x1a3550, 0x3a1a00, 0x2a1a3a, 0x1a3a1a];
+
+    let charSelectIndex = 0;
+    let charSelectModel = null;
+    let charSelectMixer = null;
+    let charSelectRenderer = null;
+    let charSelectScene = null;
+    let charSelectCamera = null;
+    let charSelectClock = null;
+    let charSelectAnimFrame = null;
+
+    // Current customization
+    const customColors = {
+      hair: HAIR_COLORS[0],
+      eyes: EYE_COLORS[0],
+      outfit: OUTFIT_COLORS[0],
+    };
+
+    // Heuristics for material assignment
+    function assignCustomColors(model) {
+      model.traverse(child => {
+        if (!child.isMesh || !child.material) return;
+        const name = (child.name + ' ' + (child.material.name || '')).toLowerCase();
+        const mat = Array.isArray(child.material) ? child.material : [child.material];
+
+        mat.forEach(m => {
+          if (!m || !m.clone) return;
+          const nm = (m.name || '').toLowerCase();
+          // Hair detection
+          if (nm.includes('hair') || name.includes('hair') || nm.includes('pelo') || nm.includes('cabello')) {
+            m.color = new THREE.Color(customColors.hair);
+          }
+          // Eye detection
+          else if (nm.includes('eye') || name.includes('eye') || nm.includes('ojo')) {
+            m.color = new THREE.Color(customColors.eyes);
+          }
+          // Outfit / body detection
+          else if (nm.includes('cloth') || nm.includes('ropa') || nm.includes('armor') || nm.includes('body') || nm.includes('suit') || nm.includes('outfit') || nm.includes('top') || nm.includes('jacket') || nm.includes('pant') || nm.includes('boot')) {
+            m.color = new THREE.Color(customColors.outfit);
+          }
+        });
+      });
+    }
+
+    function buildCharSelect() {
+      const canvas = document.getElementById('charselect-scene');
+      charSelectRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      charSelectRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      charSelectRenderer.shadowMap.enabled = true;
+      charSelectRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+      charSelectRenderer.toneMappingExposure = 1.1;
+
+      function resize() {
+        const w = window.innerWidth, h = window.innerHeight;
+        charSelectRenderer.setSize(w, h);
+        if (charSelectCamera) {
+          charSelectCamera.aspect = w / h;
+          charSelectCamera.updateProjectionMatrix();
+        }
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      charSelectScene = new THREE.Scene();
+      charSelectScene.background = new THREE.Color(0x0f0c09);
+      charSelectScene.fog = new THREE.FogExp2(0x0f0c09, 0.018);
+
+      charSelectCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.05, 200);
+      charSelectCamera.position.set(0, 2.2, 6);
+      charSelectCamera.lookAt(0, 1.2, 0);
+
+      charSelectClock = new THREE.Clock();
+
+      // Lights
+      charSelectScene.add(new THREE.AmbientLight(0xffd580, 0.45));
+      const key = new THREE.DirectionalLight(0xfff5d0, 2.5);
+      key.position.set(3, 8, 5); key.castShadow = true;
+      charSelectScene.add(key);
+      const fill = new THREE.DirectionalLight(0x4060cc, 0.4);
+      fill.position.set(-4, 3, -3);
+      charSelectScene.add(fill);
+      const rim = new THREE.PointLight(0xb8922a, 1.2, 20);
+      rim.position.set(-2, 4, -2);
+      charSelectScene.add(rim);
+
+      // Ground plane
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(30, 30),
+        new THREE.MeshStandardMaterial({ color: 0x0a0805, roughness: 0.95 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      charSelectScene.add(ground);
+
+      // Try to load a backdrop world
+      if (THREE.GLTFLoader) {
+        const ldr = new THREE.GLTFLoader();
+        ldr.load('assets/models/world/Village_Snow.glb', (gltf) => {
+          const bg = gltf.scene;
+          bg.scale.setScalar(1.6);
+          bg.position.set(-8, -0.5, -8);
+          bg.rotation.y = 0.4;
+          bg.traverse(c => {
+            if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; }
+          });
+          charSelectScene.add(bg);
+        }, undefined, () => { });
+      }
+
+      // Load initial character
+      loadCharSelectModel(CHARACTERS[charSelectIndex]);
+
+      // Navigation
+      document.getElementById('char-prev').addEventListener('click', () => {
+        charSelectIndex = (charSelectIndex - 1 + CHARACTERS.length) % CHARACTERS.length;
+        updateCharPanel();
+        loadCharSelectModel(CHARACTERS[charSelectIndex]);
+      });
+      document.getElementById('char-next').addEventListener('click', () => {
+        charSelectIndex = (charSelectIndex + 1) % CHARACTERS.length;
+        updateCharPanel();
+        loadCharSelectModel(CHARACTERS[charSelectIndex]);
+      });
+
+      // Color swatches
+      document.querySelectorAll('.swatch').forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          const type = swatch.dataset.type;
+          const idx = parseInt(swatch.dataset.index);
+
+          // Deselect siblings
+          document.querySelectorAll(`.swatch[data-type="${type}"]`).forEach(s => s.classList.remove('active'));
+          swatch.classList.add('active');
+
+          // Apply color
+          if (type === 'hair') customColors.hair = HAIR_COLORS[idx];
+          if (type === 'eyes') customColors.eyes = EYE_COLORS[idx];
+          if (type === 'outfit') customColors.outfit = OUTFIT_COLORS[idx];
+
+          if (charSelectModel) assignCustomColors(charSelectModel);
+        });
+      });
+
+      // Confirm
+      document.getElementById('btn-confirm-char').addEventListener('click', () => {
+        selectedChar = CHARACTERS[charSelectIndex];
+        if (charSelectAnimFrame) cancelAnimationFrame(charSelectAnimFrame);
+        showScreen('screen-game');
+        setTimeout(initGame, 600);
+      });
+      document.getElementById('btn-confirm-char').disabled = false;
+
+      // Render loop
+      function loop() {
+        charSelectAnimFrame = requestAnimationFrame(loop);
+        const dt = charSelectClock.getDelta();
+        if (charSelectMixer) charSelectMixer.update(dt);
+        // Slow camera orbit
+        const t = charSelectClock.elapsedTime;
+        charSelectCamera.position.x = Math.sin(t * 0.08) * 0.6;
+        charSelectCamera.lookAt(0, 1.3, 0);
+        charSelectRenderer.render(charSelectScene, charSelectCamera);
+      }
+      loop();
+    }
+
+    function updateCharPanel() {
+      const ch = CHARACTERS[charSelectIndex];
+      document.getElementById('char-panel-name').textContent = ch.label;
+      document.getElementById('char-panel-class').textContent = ch.class;
+    }
+
+    function loadCharSelectModel(ch) {
+      if (charSelectModel && charSelectScene) charSelectScene.remove(charSelectModel);
+      charSelectModel = null; charSelectMixer = null;
+
+      if (!THREE.GLTFLoader) return;
+      const loader = new THREE.GLTFLoader();
+      loader.load(ch.file, (gltf) => {
+        const m = gltf.scene;
+        const box = new THREE.Box3().setFromObject(m);
+        const size = box.getSize(new THREE.Vector3());
+        const scale = 2.4 / size.y;
+        m.scale.setScalar(scale);
+        const box2 = new THREE.Box3().setFromObject(m);
+        m.position.y = -box2.min.y;
+        m.position.z = -0.3;
+        m.traverse(c => { if (c.isMesh) { c.castShadow = true; } });
+
+        assignCustomColors(m);
+
+        charSelectScene.add(m);
+        charSelectModel = m;
+
+        if (gltf.animations.length) {
+          charSelectMixer = new THREE.AnimationMixer(m);
+          const idle = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+          charSelectMixer.clipAction(idle).play();
+        }
+      }, undefined, () => {
+        const fallback = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.3, 1.6, 8),
+          new THREE.MeshStandardMaterial({ color: 0xb8922a })
+        );
+        fallback.position.y = 0.8;
+        charSelectScene.add(fallback);
+        charSelectModel = fallback;
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  GAME WORLD
+    // ═══════════════════════════════════════════════════════════
+    let renderer3D, scene3D, camera3D, clock3D;
+    let playerMixer = null;
+    let playerIdleAction = null, playerWalkAction = null, playerRunAction = null;
+    let playerJumpStartAction = null, playerJumpAirAction = null, playerJumpLandAction = null;
+    let isWalking = false, isRunning = false, isJumping = false;
+    let playerMesh, ancianaMesh, wellMesh;
+    let jumpVelocityY = 0;
+    const JUMP_FORCE = 0.28;   // Higher jump
+    const GRAVITY = 0.012;
+    let isGrounded = true;
+    let skeletonMesh = null, skeletonActivated = false, skeletonTalked = false;
+    let sello1Fixes = 0;
+    let barbarianMesh = null;
+    let barbarianTalked = false;
+    let barbarianActivated = false;
+    let sello4Fixes = 0;
+    let flyIntervals = [];
+
+    function initGame() {
+      const canvas = document.getElementById('game-canvas');
+      renderer3D = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer3D.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer3D.shadowMap.enabled = true;
+      renderer3D.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer3D.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer3D.toneMappingExposure = 1.2;
+
+      scene3D = new THREE.Scene();
+      scene3D.background = new THREE.Color(0xc8dce8);
+      camera3D = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.05, 200);
+      camera3D.position.set(0, 6, 12);
+      clock3D = new THREE.Clock();
+
+      setupLights();
+      setupControls();
+      updateHUD();
+      buildWorld();
+      spawnPlayer();
+      gameLoop();
+      window.addEventListener('resize', onResize3D);
+
+      setTimeout(() => document.getElementById('objective-banner').classList.remove('hidden'), 2000);
+    }
+
+    function setupLights() {
+      scene3D.add(new THREE.AmbientLight(0xffd080, 0.35));
+      scene3D.add(new THREE.HemisphereLight(0x4a7a2a, 0x1a0e00, 0.4));
+      const sun = new THREE.DirectionalLight(0xfff5c0, 2.8);
+      sun.position.set(30, 50, 20); sun.castShadow = true;
+      sun.shadow.camera.near = 0.1; sun.shadow.camera.far = 200;
+      sun.shadow.camera.left = -60; sun.shadow.camera.right = 60;
+      sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
+      sun.shadow.mapSize.set(2048, 2048);
+      scene3D.add(sun);
+      const fill = new THREE.DirectionalLight(0x6080ff, 0.3);
+      fill.position.set(-20, 10, -10); scene3D.add(fill);
+      const rim = new THREE.PointLight(0xff8844, 0.8, 40);
+      rim.position.set(5, 8, -5); scene3D.add(rim);
+    }
+
+    function buildWorld() {
+      if (THREE.GLTFLoader) {
+        const loader = new THREE.GLTFLoader();
+        // DESPUES
+        loader.load('assets/models/world/Village_Snow.glb', (gltf) => {
+          const m = gltf.scene;
+          m.scale.setScalar(2.5);
+          m.traverse(c => {
+            if (c.isMesh) {
+              c.castShadow = true; c.receiveShadow = true;
+              if (c.name.toLowerCase().includes('well')) wellMesh = c;
+            }
+          });
+          worldMesh = m;
+          scene3D.add(m);
+          collidableMeshes = collectCollidables(m);
+          m.updateMatrixWorld(true);
+          const _b = new THREE.Box3().setFromObject(m);
+          MAP_BOUNDS.minX = _b.min.x - 50; MAP_BOUNDS.maxX = _b.max.x + 50;
+          MAP_BOUNDS.minZ = _b.min.z - 50; MAP_BOUNDS.maxZ = _b.max.z + 50;
+          buildMinimapBackground();   // ← NUEVO: genera el fondo del minimapa al cargar el mapa inicial
+        });
+      } else {
+        const geo = new THREE.PlaneGeometry(120, 120);
+        const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xd0e8f0 }));
+        ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+        scene3D.add(ground);
+        collidableMeshes = [ground];
+      }
+      spawnAnciana();
+      spawnBarbarian();
+    }
+
+    function createBorderFog() {
+      fogWalls.forEach(w => scene3D.remove(w));
+      fogWalls = [];
+      const fogMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, side: THREE.DoubleSide,
+        vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+        fragmentShader: `varying vec2 vUv; void main(){ float v=1.0-smoothstep(0.0,1.0,vUv.y); float h=smoothstep(0.0,0.15,vUv.x)*(1.0-smoothstep(0.85,1.0,vUv.x)); gl_FragColor=vec4(1.0,1.0,1.0,v*h*0.85); }`
+      });
+      const H = 10;
+      const cx = (MAP_BOUNDS.minX + MAP_BOUNDS.maxX) / 2;
+      const cz = (MAP_BOUNDS.minZ + MAP_BOUNDS.maxZ) / 2;
+      const W = MAP_BOUNDS.maxX - MAP_BOUNDS.minX + 60;
+      const D = MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ + 60;
+      const n = new THREE.Mesh(new THREE.PlaneGeometry(W, H), fogMat);
+      n.position.set(cx, 4, MAP_BOUNDS.minZ); scene3D.add(n); fogWalls.push(n);
+      const s = n.clone(); s.position.z = MAP_BOUNDS.maxZ; scene3D.add(s); fogWalls.push(s);
+      const w2 = new THREE.Mesh(new THREE.PlaneGeometry(D, H), fogMat);
+      w2.rotation.y = Math.PI / 2; w2.position.set(MAP_BOUNDS.minX, 4, cz); scene3D.add(w2); fogWalls.push(w2);
+      const e = w2.clone(); e.position.x = MAP_BOUNDS.maxX; scene3D.add(e); fogWalls.push(e);
+    }
+
+    function spawnAnciana() {
+      const group = new THREE.Group();
+      if (THREE.GLTFLoader) {
+        const loader = new THREE.GLTFLoader();
+        loader.load('assets/models/characters/Rogue_Hooded.glb', (gltf) => {
+          const m = gltf.scene;
+          const box = new THREE.Box3().setFromObject(m);
+          const size = box.getSize(new THREE.Vector3());
+          m.scale.setScalar(1.75 / size.y);
+          const box2 = new THREE.Box3().setFromObject(m);
+          m.position.y = -box2.min.y;
+          m.traverse(c => {
+            if (c.isMesh && c.material) {
+              const mat = c.material.clone();
+              mat.color = new THREE.Color(0x9b7de8);
+              c.material = mat; c.castShadow = true;
+            }
+          });
+          group.add(m);
+        }, undefined, () => {
+          const body = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.3, 1.2, 8),
+            new THREE.MeshStandardMaterial({ color: 0x6a4c9c })
+          );
+          body.position.y = 0.8; group.add(body);
+        });
+      }
+      group.position.set(-17.7, 0, -39.7);
+      group.userData.isAnciana = true;
+      scene3D.add(group);
+      ancianaMesh = group;
+
+      // Hint bubble
+      const canvas = document.createElement('canvas');
+      canvas.width = 160; canvas.height = 56;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(10,8,6,0.88)';
+      ctx.fillRect(0, 0, 160, 56);
+      ctx.fillStyle = '#b8922a';
+      ctx.font = 'bold 18px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('[E] Hablar', 80, 34);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true }));
+      sprite.position.set(0, 2.8, 0);
+      sprite.scale.set(2.4, 1.0, 1);
+      sprite.visible = false;
+      sprite.userData.isHint = true;
+      group.add(sprite);
+    }
+
+    function spawnSkeleton() {
+      const group = new THREE.Group();
+      const loader = new THREE.GLTFLoader();
+      loader.load('assets/models/villains/Skeleton_Warrior.glb', (gltf) => {
+        const m = gltf.scene;
+        const box = new THREE.Box3().setFromObject(m);
+        const size = box.getSize(new THREE.Vector3());
+        m.scale.setScalar(1.9 / size.y);
+        const box2 = new THREE.Box3().setFromObject(m);
+        m.position.y = -box2.min.y;
+        m.traverse(c => { if (c.isMesh) c.castShadow = true; });
+        group.add(m);
+        if (gltf.animations.length) {
+          const mx = new THREE.AnimationMixer(m);
+          const clip = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+          mx.clipAction(clip).play();
+          group.userData.mixer = mx;
+        }
+      }, undefined, () => {
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.2, 0.25, 1.8, 8),
+          new THREE.MeshStandardMaterial({ color: 0xccccaa })
+        );
+        body.position.y = 0.9; group.add(body);
+      });
+      group.position.set(-0.7, -0.2, 21.4);
+      group.userData.isSkeleton = true;
+      group.visible = false;
+      scene3D.add(group);
+      skeletonMesh = group;
+
+      const cv = document.createElement('canvas');
+      cv.width = 64; cv.height = 64;
+      const cx = cv.getContext('2d');
+      cx.fillStyle = '#7700cc'; cx.font = 'bold 52px serif'; cx.textAlign = 'center';
+      cx.fillText('!', 32, 52);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true }));
+      sp.position.set(0, 2.6, 0); sp.scale.set(0.8, 0.8, 0.8);
+      sp.userData.isSkeletonHint = true;
+      group.add(sp);
+    }
+
+    function spawnRiverSkeletons() {
+      // ── Guardián 1 – Skeleton Warrior ──────────────────────────
+      if (!skeletonMesh) spawnSkeleton();
+      if (skeletonMesh) {
+        skeletonMesh.position.set(24.62, 0.06, -37.94);
+        skeletonMesh.visible = true;
+      }
+
+      // ── Guardián 2 – Skeleton Rogue ────────────────────────────
+      if (!skeleton2Mesh) {
+        const g2 = new THREE.Group();
+        const loader2 = new THREE.GLTFLoader();
+        loader2.load('assets/models/villains/Skeleton_Rogue.glb', (gltf) => {
+          const m = gltf.scene;
+          const box = new THREE.Box3().setFromObject(m);
+          m.scale.setScalar(1.9 / box.getSize(new THREE.Vector3()).y);
+          const box2 = new THREE.Box3().setFromObject(m);
+          m.position.y = -box2.min.y;
+          m.traverse(c => { if (c.isMesh) c.castShadow = true; });
+          g2.add(m);
+          if (gltf.animations.length) {
+            const mx = new THREE.AnimationMixer(m);
+            const clip = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+            mx.clipAction(clip).play();
+            g2.userData.mixer = mx;
+          }
+        });
+        g2.position.set(-13.09, -0.13, 118.53);
+        g2.userData.isSkeleton2 = true;
+        scene3D.add(g2);
+        skeleton2Mesh = g2;
+      } else {
+        skeleton2Mesh.position.set(-13.09, -0.13, 118.53);
+        skeleton2Mesh.visible = true;
+      }
+
+      // ── Guardián 3 – Skeleton Minion ───────────────────────────
+      if (!skeleton3Mesh) {
+        const g3 = new THREE.Group();
+        const loader3 = new THREE.GLTFLoader();
+        loader3.load('assets/models/villains/Skeleton_Minion.glb', (gltf) => {
+          const m = gltf.scene;
+          const box = new THREE.Box3().setFromObject(m);
+          m.scale.setScalar(1.9 / box.getSize(new THREE.Vector3()).y);
+          const box2 = new THREE.Box3().setFromObject(m);
+          m.position.y = -box2.min.y;
+          m.traverse(c => { if (c.isMesh) c.castShadow = true; });
+          g3.add(m);
+          if (gltf.animations.length) {
+            const mx = new THREE.AnimationMixer(m);
+            const clip = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+            mx.clipAction(clip).play();
+            g3.userData.mixer = mx;
+          }
+        });
+        g3.position.set(-103.27, -0.21, -22.49);
+        g3.userData.isSkeleton3 = true;
+        scene3D.add(g3);
+        skeleton3Mesh = g3;
+      } else {
+        skeleton3Mesh.position.set(-103.27, -0.21, -22.49);
+        skeleton3Mesh.visible = true;
+      }
+    }
+
+    // ── Diálogos de los tres guardianes ────────────────────────────
+    function startRiverGuardian1() {
+      riverGuardian1Talked = true;
+      gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      dialogQueue = [
+        { speaker: 'Guerrero del Río', text: 'Detente, viajero. Este río fue sellado por Morgalix.' },
+        { speaker: 'Guerrero del Río', text: 'Las aguas no fluirán hasta que demuestres que dominas las palabras.' },
+        { speaker: 'Guerrero del Río', text: 'Responde bien... o el río se llevará tu fuerza.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        setTimeout(() => openRiverChallenge1(), 600);
+      };
+      showDialog();
+    }
+
+    function startRiverGuardian2() {
+      riverGuardian2Talked = true;
+      gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      dialogQueue = [
+        { speaker: 'Pícaro del Río', text: 'Curioso... pasaste al Guerrero.' },
+        { speaker: 'Pícaro del Río', text: 'Pero yo soy más astuto. Las palabras agudas son mi especialidad.' },
+        { speaker: 'Pícaro del Río', text: 'Las palabras agudas llevan tilde cuando terminan en vocal, n o s.' },
+        { speaker: 'Pícaro del Río', text: 'Ahora demuéstralo...' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        setTimeout(() => openRiverChallenge2(), 600);
+      };
+      showDialog();
+    }
+
+    function startRiverGuardian3() {
+      riverGuardian3Talked = true;
+      gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      dialogQueue = [
+        { speaker: 'Súbdito del Río', text: 'Eres más fuerte de lo que pensaba, guardian.' },
+        { speaker: 'Súbdito del Río', text: 'El último sello... las palabras llanas.' },
+        { speaker: 'Súbdito del Río', text: 'Las llanas llevan tilde solo cuando NO terminan en vocal, n o s.' },
+        { speaker: 'Súbdito del Río', text: 'Árbol, lápiz, fácil... demuestra que lo sabes.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        setTimeout(() => openRiverChallenge3(), 600);
+      };
+      showDialog();
+    }
+
+    // ── Desafíos del río ────────────────────────────────────────
+    function openRiverChallenge1() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      showScreen('screen-river1');
+      setTimeout(() => {
+        const correct = 1; // "llegó"
+        [0, 1, 2].forEach(i => {
+          const btn = document.getElementById('r1-btn' + i);
+          btn.className = 'echo-btn';
+          btn.style.pointerEvents = 'auto';
+          btn.onclick = () => checkRiverChallenge(i, correct, 'r1');
+        });
+        document.getElementById('river1-feedback').textContent = '';
+      }, 600);
+    }
+
+    function openRiverChallenge2() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      showScreen('screen-river2');
+      setTimeout(() => {
+        const correct = 1; // "sabía"
+        [0, 1, 2].forEach(i => {
+          const btn = document.getElementById('r2-btn' + i);
+          btn.className = 'echo-btn';
+          btn.style.pointerEvents = 'auto';
+          btn.onclick = () => checkRiverChallenge(i, correct, 'r2');
+        });
+        document.getElementById('river2-feedback').textContent = '';
+      }, 600);
+    }
+
+    function openRiverChallenge3() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      showScreen('screen-river3');
+      setTimeout(() => {
+        const correct = 1; // "Árbol"
+        [0, 1, 2].forEach(i => {
+          const btn = document.getElementById('r3-btn' + i);
+          btn.className = 'echo-btn';
+          btn.style.pointerEvents = 'auto';
+          btn.onclick = () => checkRiverChallenge(i, correct, 'r3');
+        });
+        document.getElementById('river3-feedback').textContent = '';
+      }, 600);
+    }
+
+    window.checkRiverChallenge = function (selected, correct, guardian) {
+      const map = {
+        r1: { fb: 'river1-feedback', screen: 'screen-river1', prefix: 'r1-btn' },
+        r2: { fb: 'river2-feedback', screen: 'screen-river2', prefix: 'r2-btn' },
+        r3: { fb: 'river3-feedback', screen: 'screen-river3', prefix: 'r3-btn' },
+      };
+      const { fb, screen, prefix } = map[guardian];
+      const fbEl = document.getElementById(fb);
+
+      // Bloquear todos
+      [0, 1, 2].forEach(i => {
+        document.getElementById(prefix + i).style.pointerEvents = 'none';
+      });
+
+      if (selected === correct) {
+        document.getElementById(prefix + selected).classList.add('correct-choice');
+        fbEl.textContent = '¡Correcto! El sello del río se debilita...';
+        fbEl.style.color = '#7ecb8d';
+        addXP(70);
+
+        if (guardian === 'r1') {
+          riverGuardian1Done = true;
+          setTimeout(() => {
+            showScreen('screen-game');
+            gamePhase = 'explore';
+            document.getElementById('objective-banner').classList.remove('hidden');
+            document.getElementById('objective-text').textContent = 'Busca al segundo guardián del río';
+            requestPointerLockIfNeeded();
+          }, 2200);
+        } else if (guardian === 'r2') {
+          riverGuardian2Done = true;
+          setTimeout(() => {
+            showScreen('screen-game');
+            gamePhase = 'explore';
+            document.getElementById('objective-banner').classList.remove('hidden');
+            document.getElementById('objective-text').textContent = 'Encuentra al tercer guardián del río';
+            requestPointerLockIfNeeded();
+          }, 2200);
+
+        } else if (guardian === 'r3') {
+          riverGuardian3Done = true;
+          addXP(30);
+          setTimeout(() => {
+            showScreen('screen-game');
+            gamePhase = 'dialog';
+            setTimeout(() => {
+              dialogQueue = [
+                { speaker: 'Súbdito del Río', text: 'Lo lograste. Los tres sellos han caído.' },
+                { speaker: 'Súbdito del Río', text: 'El río recuerda su nombre... y tú eres digno guardián.' },
+                { speaker: 'Súbdito del Río', text: 'Morgalix huye más adentro del reino. Sigue su rastro.' },
+              ];
+              dialogIndex = 0;
+              dialogCallback = () => {
+                gamePhase = 'explore';
+                unlockedMaps.add('lake');
+                document.getElementById('objective-banner').classList.remove('hidden');
+                document.getElementById('objective-text').textContent = '¡Río liberado! El Lago Encantado te espera (T para viajar)';
+              };
+              releasePointerLockIfNeeded();
+              showDialog();
+            }, 800);
+          }, 2200);
+        }
+
+      } else {
+        document.getElementById(prefix + selected).classList.add('wrong-choice');
+        fbEl.textContent = 'Incorrecto. Las aguas resisten...';
+        fbEl.style.color = '#f09595';
+        takeDamage(HP_WRONG_PENALTY);
+        setTimeout(() => {
+          [0, 1, 2].forEach(i => {
+            const b = document.getElementById(prefix + i);
+            b.style.pointerEvents = 'auto';
+            b.classList.remove('wrong-choice');
+          });
+          fbEl.textContent = '';
+        }, 1200);
+      }
+    };
+
+    function spawnBarbarian() {
+      const group = new THREE.Group();
+      const loader = new THREE.GLTFLoader();
+      loader.load('assets/models/characters/Barbarian.glb', (gltf) => {
+        const m = gltf.scene;
+        const box = new THREE.Box3().setFromObject(m);
+        const size = box.getSize(new THREE.Vector3());
+        m.scale.setScalar(1.9 / size.y);
+        const box2 = new THREE.Box3().setFromObject(m);
+        m.position.y = -box2.min.y;
+        m.traverse(c => {
+          if (c.isMesh && c.material) {
+            c.castShadow = true;
+          }
+        });
+        group.add(m);
+        if (gltf.animations.length) {
+          const mx = new THREE.AnimationMixer(m);
+          const clip = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+          mx.clipAction(clip).play();
+          group.userData.mixer = mx;
+        }
+      }, undefined, () => {
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.28, 0.32, 2.0, 8),
+          new THREE.MeshStandardMaterial({ color: 0x8B4513 })
+        );
+        body.position.y = 1.0; group.add(body);
+      });
+
+      group.position.set(14.00, -0.08, -35.35);
+      group.rotation.y = Math.PI;
+      group.userData.isBarbarian = true;
+      scene3D.add(group);
+      barbarianMesh = group;
+
+      // Hint bubble
+      const canvas = document.createElement('canvas');
+      canvas.width = 180; canvas.height = 56;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'rgba(10,8,6,0.88)';
+      ctx.fillRect(0, 0, 180, 56);
+      ctx.fillStyle = '#b8922a';
+      ctx.font = 'bold 18px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('[E] Hablar', 90, 34);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(canvas), transparent: true
+      }));
+      sprite.position.set(0, 3.2, 0);
+      sprite.scale.set(2.6, 1.0, 1);
+      sprite.visible = false;
+      sprite.userData.isBarbarianHint = true;
+      group.add(sprite);
+    }
+
+    function spawnPlayer() {
+      const group = new THREE.Group();
+      if (THREE.GLTFLoader && selectedChar) {
+        const loader = new THREE.GLTFLoader();
+        loader.load(selectedChar.file, (gltf) => {
+          const m = gltf.scene;
+          const box = new THREE.Box3().setFromObject(m);
+          const size = box.getSize(new THREE.Vector3());
+          m.scale.setScalar(1.75 / size.y);
+          const box2 = new THREE.Box3().setFromObject(m);
+          m.position.y = -box2.min.y;
+
+          // Apply custom colors from char select
+          assignCustomColors(m);
+
+          m.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+          group.add(m);
+          playerMixer = new THREE.AnimationMixer(m);
+          const animLoader = new THREE.GLTFLoader();
+          animLoader.load('assets/models/animations/Rig_Medium/Rig_Medium_MovementBasic.glb', (ag) => {
+            const idleClip = ag.animations.find(a => a.name === 'Jump_Idle');
+            const walkClip = ag.animations.find(a => a.name === 'Walking_A');
+            const runClip = ag.animations.find(a => a.name === 'Running_A');
+            const jumpStartClip = ag.animations.find(a => a.name === 'Jump_Start');
+            const jumpAirClip = ag.animations.find(a => a.name === 'Jump_Full_Short');
+            const jumpLandClip = ag.animations.find(a => a.name === 'Jump_Land');
+            if (idleClip) playerIdleAction = playerMixer.clipAction(idleClip);
+            if (walkClip) playerWalkAction = playerMixer.clipAction(walkClip);
+            if (runClip) playerRunAction = playerMixer.clipAction(runClip);
+            if (jumpStartClip) playerJumpStartAction = playerMixer.clipAction(jumpStartClip);
+            if (jumpAirClip) playerJumpAirAction = playerMixer.clipAction(jumpAirClip);
+            if (jumpLandClip) playerJumpLandAction = playerMixer.clipAction(jumpLandClip);
+            if (playerIdleAction) playerIdleAction.play();
+          });
+        }, undefined, () => {
+          const f = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.25, 0.3, 1.5, 8),
+            new THREE.MeshStandardMaterial({ color: 0xd4a017 })
+          );
+          f.position.y = 0.75; group.add(f);
+        });
+      } else {
+        const f = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.25, 0.3, 1.5, 8),
+          new THREE.MeshStandardMaterial({ color: 0xd4a017 })
+        );
+        f.position.y = 0.75; group.add(f);
+      }
+      group.position.set(-62.8, 5, 32.7);
+      group.userData.isPlayer = true;
+      scene3D.add(group);
+      playerMesh = group;
+      document.getElementById('hud-name').textContent = selectedChar ? selectedChar.label : 'Heroe';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  CONTROLS
+    // ═══════════════════════════════════════════════════════════
+    const keys = {};
+    let smoothedPlayerY = 0;
+    let cameraYaw = 0;
+    let cameraPitchFirst = 0;     // 0 = mirando al horizonte en primera persona
+    let cameraPitchThird = 0.4;   // valor orbital original en tercera persona
+    let cameraMode = 'third';
+    const CAM_DIST = 6;
+    const CAM_MIN_PITCH_FIRST = -1.3;
+    const CAM_MAX_PITCH_FIRST = 1.3;
+    const CAM_MIN_PITCH_THIRD = -0.6;
+    const CAM_MAX_PITCH_THIRD = 1.2;
+    const MOVE_SPEED = 0.08;
+
+    function setupControls() {
+      window.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        if (e.repeat) return;
+        if (e.code === 'KeyE') tryInteract();
+        if (e.code === 'KeyV') cameraMode = cameraMode === 'third' ? 'first' : 'third';
+        if (e.code === 'KeyT') toggleTeleportMenu();
+        if (e.code === 'Escape') {
+          closeTeleportMenu();
+          if (gamePhase === 'dialog') {
+            document.getElementById('dialog-box').classList.remove('active');
+            gamePhase = 'explore';
+            if (ancianaTalked && !hasGrimoire) ancianaTalked = false;
+            if (barbarianTalked && !barbarianActivated) barbarianTalked = false;
+            if (skeletonTalked && !skeletonActivated) skeletonTalked = false;
+            const canvas = document.getElementById('game-canvas');
+            canvas.requestPointerLock();
+          }
+        }
+        if (e.code === 'Enter' && gamePhase === 'dialog') advanceDialog();
+        if (e.code === 'Enter' && gamePhase === 'puzzle') checkRune();
+        if (e.code === 'Enter' && gamePhase === 'item') closeItemPopup();
+        if (e.code === 'Space' && gamePhase === 'explore') {
+          e.preventDefault();
+          triggerJump();
+        }
+
+        if (e.code === 'KeyC' && playerMesh) {
+          console.log(
+            'Posición jugador:',
+            'X:', playerMesh.position.x.toFixed(2),
+            'Y:', playerMesh.position.y.toFixed(2),
+            'Z:', playerMesh.position.z.toFixed(2)
+          );
+        }
+
+      });
+
+      window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+      document.addEventListener('pointerlockchange', () => {
+        const hint = document.getElementById('pointer-resume-hint');
+        if (!document.pointerLockElement) {
+          Object.keys(keys).forEach(k => keys[k] = false);
+          if (gamePhase === 'explore') hint.classList.add('active');
+        } else if (document.pointerLockElement === canvas) {
+          hint.classList.remove('active');
+        }
+      });
+
+      document.addEventListener('pointerlockerror', () => {
+        if (gamePhase === 'explore') {
+          document.getElementById('pointer-resume-hint').classList.add('active');
+        }
+      });
+
+      document.getElementById('pointer-resume-hint').addEventListener('click', () => {
+        requestPointerLockIfNeeded();
+      });
+
+      window.addEventListener('blur', () => {
+        Object.keys(keys).forEach(k => keys[k] = false);
+      });
+
+      const canvas = document.getElementById('game-canvas');
+
+      document.addEventListener('mousemove', e => {
+        if (document.pointerLockElement !== canvas) return;
+        cameraYaw -= e.movementX * 0.003;
+        if (cameraMode === 'first') {
+          cameraPitchFirst = Math.max(CAM_MIN_PITCH_FIRST, Math.min(CAM_MAX_PITCH_FIRST, cameraPitchFirst - e.movementY * 0.003));
+        } else {
+          cameraPitchThird = Math.max(CAM_MIN_PITCH_THIRD, Math.min(CAM_MAX_PITCH_THIRD, cameraPitchThird + e.movementY * 0.003));
+        }
+      });
+
+      canvas.addEventListener('click', () => {
+        if (gamePhase === 'explore') canvas.requestPointerLock();
+      });
+
+      let lastTX = 0, lastTY = 0, touching = false;
+      canvas.addEventListener('touchstart', e => { lastTX = e.touches[0].clientX; lastTY = e.touches[0].clientY; touching = true; });
+      canvas.addEventListener('touchmove', e => {
+        if (!touching) return;
+        cameraYaw -= (e.touches[0].clientX - lastTX) * 0.005;
+        const dy = (e.touches[0].clientY - lastTY) * 0.005;
+        if (cameraMode === 'first') {
+          cameraPitchFirst = Math.max(CAM_MIN_PITCH_FIRST, Math.min(CAM_MAX_PITCH_FIRST, cameraPitchFirst - dy));
+        } else {
+          cameraPitchThird = Math.max(CAM_MIN_PITCH_THIRD, Math.min(CAM_MAX_PITCH_THIRD, cameraPitchThird + dy));
+        }
+        lastTX = e.touches[0].clientX; lastTY = e.touches[0].clientY;
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener('touchend', () => { touching = false; });
+    }
+
+    function releasePointerLockIfNeeded() {
+      document.getElementById('pointer-resume-hint').classList.remove('active');
+      if (document.pointerLockElement) document.exitPointerLock();
+    }
+
+    function requestPointerLockIfNeeded() {
+      const canvas = document.getElementById('game-canvas');
+      if (gamePhase === 'explore' && document.pointerLockElement !== canvas) {
+        canvas.requestPointerLock();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  TELEPORT MENU
+    // ═══════════════════════════════════════════════════════════
+    function toggleTeleportMenu() {
+      const menu = document.getElementById('teleport-menu');
+      if (menu.classList.contains('active')) {
+        closeTeleportMenu();
+      } else {
+        openTeleportMenu();
+      }
+    }
+
+    function openTeleportMenu() {
+      if (gamePhase !== 'explore') return;
+      gamePhase = 'menu';
+      releasePointerLockIfNeeded();
+      const menu = document.getElementById('teleport-menu');
+      menu.classList.add('active');
+
+      // Update locked states
+      document.querySelectorAll('.teleport-needs-unlock').forEach(btn => {
+        const dest = btn.dataset.dest;
+        if (unlockedMaps.has(dest)) {
+          btn.classList.remove('locked');
+        } else {
+          btn.classList.add('locked');
+        }
+      });
+    }
+
+    function closeTeleportMenu() {
+      document.getElementById('teleport-menu').classList.remove('active');
+      if (gamePhase === 'menu') {
+        gamePhase = 'explore';
+        requestPointerLockIfNeeded();
+      }
+    }
+
+    window.teleportTo = function (dest) {
+      if (dest !== 'village' && !unlockedMaps.has(dest)) return;
+      closeTeleportMenu();
+      doTeleport(dest);
+    };
+
+    function doTeleport(dest) {
+      if (dest === currentMap) return;
+      currentMap = dest;
+      const spawn = MAP_SPAWNS[dest] || { x: 0, z: 0 };
+      const file = MAP_FILES[dest];
+      if (!file) return;
+
+      document.getElementById('fade-overlay').classList.add('fade-in');
+
+      setTimeout(() => {
+        if (worldMesh) scene3D.remove(worldMesh);
+        const loader = new THREE.GLTFLoader();
+        if (ancianaMesh) ancianaMesh.visible = false;
+        if (barbarianMesh) barbarianMesh.visible = false;
+        loader.load(file, (gltf) => {
+          const m = gltf.scene;
+          m.scale.setScalar(2.5);
+          m.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+          worldMesh = m;
+          scene3D.add(m);
+          collidableMeshes = collectCollidables(m);
+          m.updateMatrixWorld(true);
+          const _b = new THREE.Box3().setFromObject(m);
+          MAP_BOUNDS.minX = _b.min.x - 50; MAP_BOUNDS.maxX = _b.max.x + 50;
+          MAP_BOUNDS.minZ = _b.min.z - 50; MAP_BOUNDS.maxZ = _b.max.z + 50;
+          createBorderFog();
+
+          if (ancianaMesh) {
+            ancianaMesh.visible = (dest === 'village');
+          }
+
+          if (barbarianMesh) {
+            barbarianMesh.visible = (dest === 'village'); // ← ajusta si lo quieres en otro mapa
+          }
+
+          if (skeletonMesh) {
+            skeletonMesh.visible = (dest === 'forest');
+          }
+
+          if (dest === 'forest') {
+            scene3D.fog = new THREE.FogExp2(0xffffff, 0.045);
+            scene3D.background = new THREE.Color(0xffffff);
+            spawnSkeleton();
+            setTimeout(() => { if (skeletonMesh) skeletonMesh.visible = true; }, 800);
+          } else {
+            scene3D.fog = null;
+            scene3D.background = new THREE.Color(0xc8dce8);
+          }
+
+          if (dest === 'river') {
+            spawnRiverSkeletons();
+          }
+
+          // DESPUES
+          if (dest === 'lake') {
+            spawnWitch();
+          }
+
+          minimapBgCanvas = null;
+          buildMinimapBackground();
+          if (playerMesh) playerMesh.position.set(spawn.x, 5, spawn.z);
+
+          document.getElementById('objective-banner').classList.remove('hidden');
+          document.getElementById('objective-text').textContent =
+            dest === 'lake'
+              ? 'Encuentra a la Bruja del Lago y enfrenta su hechizo final'
+              : 'Explorando: ' + MAP_NAMES[dest];
+
+          document.getElementById('fade-overlay').classList.remove('fade-in');
+          gamePhase = 'explore';
+          requestPointerLockIfNeeded();
+        });
+      }, 600);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  LEGACY TELEPORT (walking into zones)
+    // ═══════════════════════════════════════════════════════════
+    function teleportToVillage() {
+      unlockedMaps.add('village');
+      doTeleport('village');
+      if (playerMesh) playerMesh.position.set(-130.3, 5, -53.4);
+    }
+
+    function teleportToForest() {
+      unlockedMaps.add('forest');
+      doTeleport('forest');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  JUMP
+    // ═══════════════════════════════════════════════════════════
+    function triggerJump() {
+      if (!isGrounded || isJumping) return;
+      isJumping = true; isGrounded = false;
+      jumpVelocityY = JUMP_FORCE;
+      const allActions = [playerIdleAction, playerWalkAction, playerRunAction];
+      allActions.forEach(a => a && a.fadeOut(0.1));
+      if (playerJumpStartAction) {
+        playerJumpStartAction.reset().fadeIn(0.1).play();
+        playerJumpStartAction.clampWhenFinished = true;
+        playerJumpStartAction.loop = THREE.LoopOnce;
+      }
+      setTimeout(() => {
+        if (playerJumpStartAction) playerJumpStartAction.fadeOut(0.1);
+        if (playerJumpAirAction) {
+          playerJumpAirAction.reset().fadeIn(0.1).play();
+          playerJumpAirAction.loop = THREE.LoopOnce;
+          playerJumpAirAction.clampWhenFinished = true;
+        }
+      }, 300);
+    }
+
+    function landJump() {
+      if (playerJumpAirAction) playerJumpAirAction.fadeOut(0.1);
+
+      if (playerJumpLandAction) {
+        playerJumpLandAction.reset().fadeIn(0.1).play();
+        playerJumpLandAction.loop = THREE.LoopOnce;
+        playerJumpLandAction.clampWhenFinished = true;
+      }
+
+      setTimeout(() => {
+        if (playerJumpLandAction) playerJumpLandAction.fadeOut(0.15);
+
+        const isMovingNow =
+          keys['KeyW'] || keys['KeyA'] || keys['KeyS'] || keys['KeyD'];
+
+        const isRunningNow = isMovingNow && keys['ShiftLeft'];
+
+        if (isMovingNow) {
+          if (isRunningNow && playerRunAction) {
+            playerRunAction.reset().fadeIn(0.2).play();
+            isRunning = true;
+            isWalking = false;
+          } else if (playerWalkAction) {
+            playerWalkAction.reset().fadeIn(0.2).play();
+            isWalking = true;
+            isRunning = false;
+          }
+        } else {
+          if (playerIdleAction) {
+            playerIdleAction.reset().fadeIn(0.2).play();
+          }
+          isWalking = false;
+          isRunning = false;
+        }
+
+        isJumping = false;
+        isGrounded = true;
+      }, 400);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  INTERACTION
+    // ═══════════════════════════════════════════════════════════
+    function tryInteract() {
+      if (gamePhase !== 'explore') return;
+      if (ancianaMesh) {
+        const dist = playerMesh.position.distanceTo(ancianaMesh.position);
+        if (dist < 4) {
+          if (!ancianaTalked) startAncianaDialog1();
+          else if (hasGrimoire && !wellActivated && !anciana2Talked) startWellDialog();
+          else if (anciana2Talked) startAncianaDialog3();
+        }
+      }
+      if (hasGrimoire && !wellActivated) {
+        const p = playerMesh.position;
+        if (isTouchingWell(p.x, p.z)) openPuzzle();
+      }
+      if (barbarianMesh) {
+        const dist = playerMesh.position.distanceTo(barbarianMesh.position);
+        if (dist < 4) {
+          if (!barbarianTalked) startBarbarianDialog();
+        }
+      }
+      // DESPUES
+      if (currentMap === 'river') {
+        if (skeletonMesh && playerMesh.position.distanceTo(skeletonMesh.position) < 4 && !riverGuardian1Done)
+          startRiverGuardian1();
+        if (skeleton2Mesh && playerMesh.position.distanceTo(skeleton2Mesh.position) < 4 && !riverGuardian2Done)
+          startRiverGuardian2();
+        if (skeleton3Mesh && playerMesh.position.distanceTo(skeleton3Mesh.position) < 4 && !riverGuardian3Done)
+          startRiverGuardian3();
+      }
+      if (currentMap === 'lake') {
+        if (witchMesh && playerMesh.position.distanceTo(witchMesh.position) < 4 && !witchTalked)
+          startWitchDialog();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  DIALOGS
+    // ═══════════════════════════════════════════════════════════
+    function startAncianaDialog1() {
+      ancianaTalked = true;
+      document.getElementById('objective-banner').classList.add('hidden');
+      gamePhase = 'dialog';
+      dialogQueue = [
+        { speaker: 'Informante', text: 'Llegas tarde... la anciana ya no esta.' },
+        { speaker: 'Informante', text: 'Antes de desaparecer hablo de ti. Dijo que solo tu puedes restaurar las palabras perdidas.' },
+        { speaker: 'Informante', text: 'Morgalix robo los hechizos del reino... sin ellos, todo esta muriendo.' },
+        { speaker: 'Informante', text: 'Toma este grimorio. Es tu unica herramienta para devolver el equilibrio.' },
+        { speaker: 'Informante', text: 'Empieza por el pozo del pueblo. Sin agua... no hay vida.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => { gamePhase = 'item'; showItemPopup(); };
+      showDialog();
+    }
+
+    function startWellDialog() {
+      gamePhase = 'dialog';
+      dialogQueue = [
+        { speaker: 'Informante', text: 'El pozo fue sellado con una palabra incompleta.' },
+        { speaker: 'Informante', text: 'Si restauras la palabra correcta... el agua volvera a fluir.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        gamePhase = 'explore';
+        document.getElementById('objective-banner').classList.remove('hidden');
+        document.getElementById('objective-text').textContent = 'Ve al pozo y restaura la palabra correcta';
+      };
+      showDialog();
+    }
+
+    function startAncianaDialog3() {
+      gamePhase = 'dialog';
+      dialogQueue = [
+        { speaker: 'Informante', text: 'Lo lograste... el agua ha vuelto.' },
+        { speaker: 'Informante', text: 'Pero esto apenas comienza.' },
+        { speaker: 'Informante', text: 'Ve al bosque y encuentra a Morgalix.' },
+        { speaker: 'Informante', text: 'Ella guarda los hechizos robados.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        gamePhase = 'explore';
+        anciana2Talked = true;
+        unlockedMaps.add('forest');
+        document.getElementById('objective-banner').classList.remove('hidden');
+        document.getElementById('objective-text').textContent = 'Dirijete al bosque en busca de Morgalix (T para viajar)';
+      };
+      showDialog();
+    }
+
+    function startBarbarianDialog() {
+      barbarianTalked = true;
+      gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      dialogQueue = [
+        { speaker: 'Barbarian', text: 'Alto, viajero... mi chunque ha sido maldecido.' },
+        { speaker: 'Barbarian', text: 'Morgalix corrompió las palabras que protegían mi aldea.' },
+        { speaker: 'Barbarian', text: 'Las palabras esdrújulas han perdido sus tildes... sin ellas, los hechizos fallan.' },
+        { speaker: 'Barbarian', text: 'Si puedes restaurarlas, el chunque volverá a brillar.' },
+        { speaker: 'Barbarian', text: 'Pero cuidado: las palabras se esconden entre la maleza del bosque.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        gamePhase = 'explore';
+        document.getElementById('objective-banner').classList.remove('hidden');
+        document.getElementById('objective-text').textContent = 'Ayuda al Barbarian: restaura las palabras esdrújulas';
+        setTimeout(() => openSello4(), 1200);
+      };
+      showDialog();
+    }
+
+    function showDialog() {
+      releasePointerLockIfNeeded();
+      const box = document.getElementById('dialog-box');
+      box.classList.add('active');
+      const d = dialogQueue[dialogIndex];
+      document.getElementById('dialog-speaker').textContent = d.speaker;
+      document.getElementById('dialog-text').textContent = d.text;
+    }
+
+    window.advanceDialog = function () {
+      dialogIndex++;
+      if (dialogIndex >= dialogQueue.length) {
+        document.getElementById('dialog-box').classList.remove('active');
+        if (dialogCallback) { dialogCallback(); dialogCallback = null; }
+        if (gamePhase === 'dialog') {
+          gamePhase = 'explore';
+        }
+        if (gamePhase === 'explore') {
+          requestPointerLockIfNeeded();
+        }
+        return;
+      }
+      showDialog();
+    };
+
+    function showItemPopup() {
+      document.getElementById('item-popup').classList.add('active');
+      hasGrimoire = true;
+    }
+
+    window.closeItemPopup = function () {
+      document.getElementById('item-popup').classList.remove('active');
+      gamePhase = 'explore';
+      requestPointerLockIfNeeded();
+      playAhora();
+      document.getElementById('objective-banner').classList.remove('hidden');
+      document.getElementById('objective-text').textContent = 'Acercate al pozo sellado y restaura la runa.';
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    //  SELLO 1
+    // ═══════════════════════════════════════════════════════════
+    function openSello1() {
+      sello1Fixes = 0;
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      const words = document.querySelectorAll('.diary-word');
+      words[0].textContent = 'visite'; words[0].classList.remove('fixed');
+      words[1].textContent = 'encontre'; words[1].classList.remove('fixed');
+      words[2].textContent = 'extrana'; words[2].classList.remove('fixed');
+      document.getElementById('sello1-feedback').textContent = '';
+      document.getElementById('sello1-progress').textContent = 'Correcciones: 0 / 3';
+      showScreen('screen-sello1');
+    }
+
+    window.fixWord = function (el) {
+      if (el.classList.contains('fixed')) return;
+      el.textContent = el.getAttribute('data-correct');
+      el.classList.add('fixed');
+      sello1Fixes++;
+      document.getElementById('sello1-progress').textContent = `Correcciones: ${sello1Fixes} / 3`;
+      addXP(30);
+      if (sello1Fixes >= 3) {
+        document.getElementById('sello1-feedback').textContent = 'Primer sello roto. La pagina se restaura.';
+        document.getElementById('sello1-feedback').style.color = '#7ecb8d';
+        setTimeout(() => openSello2(), 1800);
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    //  SELLO 2
+    // ═══════════════════════════════════════════════════════════
+    function openSello2() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      document.querySelectorAll('.echo-btn').forEach(b => {
+        b.classList.remove('correct-choice', 'wrong-choice');
+        b.style.pointerEvents = 'auto';
+      });
+      document.getElementById('sello2-feedback').textContent = '';
+      showScreen('screen-sello2');
+    }
+
+    window.checkEcho = function (btn, result) {
+      const fb = document.getElementById('sello2-feedback');
+      if (result === 'correct') {
+        btn.classList.add('correct-choice');
+        fb.textContent = 'Segundo sello roto. Las antorchas se encienden.';
+        fb.style.color = '#7ecb8d';
+        document.querySelectorAll('.echo-btn').forEach(b => b.style.pointerEvents = 'none');
+        addXP(50);
+        setTimeout(() => openSello3(), 1800);
+      } else {
+        btn.classList.add('wrong-choice');
+        fb.textContent = 'Incorrecto. La sala se oscurece...';
+        fb.style.color = '#f09595';
+        takeDamage(HP_WRONG_PENALTY);
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    //  SELLO 3
+    // ═══════════════════════════════════════════════════════════
+    const SELLO3_WORDS = [
+      { text: 'olvidaron', correct: true },
+      { text: 'olbidaron', correct: false },
+      { text: 'olvidarón', correct: false },
+    ];
+
+    function openSello3() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      document.getElementById('sello3-feedback').textContent = '';
+      const container = document.getElementById('flying-words');
+      container.innerHTML = '';
+      flyIntervals.forEach(clearInterval);
+      flyIntervals = [];
+
+      SELLO3_WORDS.forEach((word) => {
+        const el = document.createElement('div');
+        el.className = 'flying-word';
+        el.textContent = word.text;
+        let x = 10 + Math.random() * 60, y = 10 + Math.random() * 60;
+        let vx = (Math.random() - 0.5) * 0.4, vy = (Math.random() - 0.5) * 0.4;
+        el.style.left = x + '%'; el.style.top = y + '%';
+        el.addEventListener('click', () => catchWord(word.correct, el));
+        container.appendChild(el);
+        const iv = setInterval(() => {
+          x += vx; y += vy;
+          if (x < 0 || x > 80) vx *= -1;
+          if (y < 0 || y > 70) vy *= -1;
+          el.style.left = x + '%'; el.style.top = y + '%';
+        }, 16);
+        flyIntervals.push(iv);
+      });
+
+      showScreen('screen-sello3');
+    }
+
+    window.catchWord = function (correct, el) {
+      const fb = document.getElementById('sello3-feedback');
+      if (correct) {
+        flyIntervals.forEach(clearInterval);
+        el.style.background = 'rgba(126,203,141,.3)'; el.style.borderColor = '#7ecb8d';
+        fb.textContent = 'Tercer sello roto. La Palabra Maestra esta libre.';
+        fb.style.color = '#7ecb8d';
+        addXP(80);
+        setTimeout(() => finishForestChapter(), 2200);
+      } else {
+        el.style.background = 'rgba(160,32,32,.3)'; el.style.borderColor = '#c0392b';
+        setTimeout(() => { el.style.background = 'rgba(119,0,204,.1)'; el.style.borderColor = '#7700cc'; }, 600);
+        fb.textContent = 'Esa palabra no es correcta. Sigue buscando.';
+        fb.style.color = '#f09595';
+        takeDamage(HP_WRONG_PENALTY);
+      }
+    };
+
+    // DESPUES
+    function isCollidingWithNPC(nx, nz) {
+      const npcs = [ancianaMesh, barbarianMesh, skeletonMesh, witchMesh];
+
+      for (let npc of npcs) {
+        if (!npc || !npc.visible) continue;
+
+        const dx = nx - npc.position.x;
+        const dz = nz - npc.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist < 1.8) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+    function finishForestChapter() {
+      gamePhase = 'dialog';
+      showScreen('screen-game');
+      setTimeout(() => {
+        dialogQueue = [
+          { speaker: 'Skeleton Warrior', text: 'Lo has logrado... los tres sellos han caido.' },
+          { speaker: 'Skeleton Warrior', text: 'El escriba puede descansar en paz.' },
+          { speaker: 'Skeleton Warrior', text: 'Pero Morgalix aun guarda las palabras mas poderosas.' },
+          { speaker: 'Skeleton Warrior', text: 'Tu camino continua, guardian de la lengua.' },
+        ];
+        dialogIndex = 0;
+        dialogCallback = () => {
+          gamePhase = 'explore';
+          unlockedMaps.add('river');
+          document.getElementById('objective-banner').classList.remove('hidden');
+          document.getElementById('objective-text').textContent = 'Busca a Morgalix en las profundidades del bosque';
+          addXP(50);
+        };
+        releasePointerLockIfNeeded();
+        showDialog();
+      }, 800);
+    }
+
+    const SELLO4_QUESTIONS = [
+      {
+        sentence: 'Los aprendices ____ terminado de forjar la espada.',
+        options: ['an', 'han', 'jan'],
+        correct: 1,
+        narrativa: 'El primer símbolo vuelve a brillar... el metal recuerda su forma.'
+      },
+      {
+        sentence: 'El herrero no sabía ____ herramienta usar.',
+        options: ['que', 'ké', 'qué'],
+        correct: 2,
+        narrativa: 'El segundo símbolo despierta... el yunque comienza a temblar.'
+      },
+      {
+        sentence: 'El herrero golpeó el yunque con gran ______.',
+        options: ['précion', 'presion', 'presión'],
+        correct: 2,
+        narrativa: 'El tercer símbolo arde con fuerza... el yunque ha sido restaurado.'
+      },
+    ];
+
+    let s4CurrentQuestion = 0;
+
+    function openSello4() {
+      s4CurrentQuestion = 0;
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      renderSello4Question();
+      showScreen('screen-sello4');
+    }
+
+    function renderSello4Question() {
+      const q = SELLO4_QUESTIONS[s4CurrentQuestion];
+      document.getElementById('sello4-sentence').textContent = q.sentence;
+      document.getElementById('sello4-feedback').textContent = '';
+      document.getElementById('sello4-progress').textContent =
+        'Pregunta ' + (s4CurrentQuestion + 1) + ' de ' + SELLO4_QUESTIONS.length;
+
+      const btns = document.querySelectorAll('.s4-option');
+      btns.forEach((btn, i) => {
+        btn.textContent = q.options[i];
+        btn.className = 's4-option echo-btn';
+        btn.style.pointerEvents = 'auto';
+        btn.onclick = () => checkSello4(i);
+      });
+    }
+
+    function checkSello4(index) {
+      const q = SELLO4_QUESTIONS[s4CurrentQuestion];
+      const fb = document.getElementById('sello4-feedback');
+      const btns = document.querySelectorAll('.s4-option');
+      btns.forEach(b => b.style.pointerEvents = 'none');
+
+      if (index === q.correct) {
+        btns[index].classList.add('correct-choice');
+        fb.textContent = q.narrativa;
+        fb.style.color = '#7ecb8d';
+        addXP(60);
+        s4CurrentQuestion++;
+        if (s4CurrentQuestion >= SELLO4_QUESTIONS.length) {
+          setTimeout(() => finishChunqueChapter(), 2200);
+        } else {
+          setTimeout(() => renderSello4Question(), 2200);
+        }
+      } else {
+        btns[index].classList.add('wrong-choice');
+        fb.textContent = 'Esa palabra no es correcta. El yunque sigue roto...';
+        fb.style.color = '#f09595';
+        takeDamage(HP_WRONG_PENALTY);
+        setTimeout(() => {
+          btns.forEach(b => b.style.pointerEvents = 'auto');
+          btns[index].classList.remove('wrong-choice');
+          fb.textContent = '';
+        }, 1000);
+      }
+    }
+
+    function finishChunqueChapter() {
+      gamePhase = 'dialog';
+      showScreen('screen-game');
+      setTimeout(() => {
+
+        dialogQueue = [
+          { speaker: 'Barbarian', text: 'El yunque vuelve a brillar. Eres digno guardian de las palabras.' },
+          { speaker: 'Barbarian', text: 'Pero escucha… debes entender lo que hiciste.' },
+          { speaker: 'Barbarian', text: 'Las palabras esdrújulas son aquellas cuya fuerza cae en la antepenúltima sílaba.' },
+          { speaker: 'Barbarian', text: 'Por ejemplo: má-gi-co, rá-pi-do, pre-sión… la voz se eleva antes del final.' },
+          { speaker: 'Barbarian', text: 'Y recuerda esto bien… todas las esdrújulas llevan tilde, sin excepción.' },
+          { speaker: 'Barbarian', text: 'Si olvidas la tilde… el hechizo se rompe.' },
+          { speaker: 'Barbarian', text: 'Lleva este conocimiento contigo. Morgalix no podra contra ti.' },
+        ];
+
+        dialogIndex = 0;
+        dialogCallback = () => {
+          gamePhase = 'explore';
+          document.getElementById('objective-banner').classList.remove('hidden');
+          document.getElementById('objective-text').textContent = 'El yunque ha sido restaurado. Continua tu camino.';
+          addXP(80);
+        };
+        releasePointerLockIfNeeded();
+        showDialog();
+      }, 800);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PUZZLE (WELL)
+    // ═══════════════════════════════════════════════════════════
+    function openPuzzle() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      stopBgMusic();
+      document.getElementById('objective-banner').classList.add('hidden');
+      showScreen('screen-puzzle');
+      setTimeout(() => {
+        document.getElementById('pl0').focus();
+        ['pl0', 'pl1'].forEach((id, i) => {
+          const inp = document.getElementById(id);
+          inp.value = '';
+          inp.addEventListener('input', () => {
+            inp.value = inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/g, '');
+            if (inp.value.length === 1 && i < 1) document.getElementById('pl1').focus();
+          });
+        });
+      }, 700);
+    }
+
+    window.checkRune = function () {
+      // 🔒 BLOQUEO CLAVE
+      if (wellActivated || runeSolved) return;
+
+      const l0 = document.getElementById('pl0').value.toUpperCase();
+      const l1 = document.getElementById('pl1').value.toUpperCase();
+      const word = l0 + l1 + 'UA';
+      const fb = document.getElementById('puzzle-feedback');
+
+      if (word === 'AGUA') {
+
+        runeSolved = true; // ✅ BLOQUEO INMEDIATO
+
+        ['r0', 'r1', 'r2', 'r3'].forEach((id, i) => {
+          setTimeout(() => {
+            const el = document.getElementById(id);
+            el.textContent = 'AGUA'[i];
+            el.classList.add('revealed');
+          }, i * 200);
+        });
+
+        fb.textContent = 'Sello restaurado. Las aguas fluyen de nuevo.';
+        fb.className = 'ok';
+
+        addXP(100);
+        playImpact();
+
+        activateWell();
+
+        setTimeout(() => {
+          playBgMusic();
+          wellActivated = true;
+          unlockedMaps.add('forest');
+          showScreen('screen-game');
+          gamePhase = 'dialog';
+          setTimeout(() => startAncianaDialog3(), 1200);
+        }, 2800);
+
+      } else {
+        fb.textContent = 'La magia resiste...';
+        fb.className = 'err';
+        takeDamage(HP_WRONG_PENALTY);
+      }
+    };
+
+    function activateWell() {
+      scene3D && scene3D.traverse(obj => {
+        if (obj.userData.isRune) {
+          obj.material.color = new THREE.Color(0xd4a017);
+          obj.material.opacity = 1;
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  XP / HUD
+    // ═══════════════════════════════════════════════════════════
+    function addXP(amount) {
+      xp += amount; updateHUD();
+      showXPToast('+' + amount + ' XP');
+    }
+    function showXPToast(text) {
+      const t = document.createElement('div');
+      t.className = 'xp-toast'; t.textContent = text;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2000);
+    }
+    function updateHUD() {
+      document.getElementById('hud-xp').textContent = 'XP: ' + xp;
+      updateHealthBar();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  COLLISION HELPERS
+    // ═══════════════════════════════════════════════════════════
+    const GROUND_CHECK_HEIGHT = 4, GROUND_CHECK_DEPTH = 20, MAX_STEP_DROP = 6, MAX_STEP_CLIMB = 3.5;
+
+    const FOOT_OFFSETS = [
+      { dx: 0, dz: 0 },
+      { dx: 0.35, dz: 0 },
+      { dx: -0.35, dz: 0 },
+      { dx: 0, dz: 0.35 },
+      { dx: 0, dz: -0.35 },
+    ];
+
+    function raycastGroundBest(x, z, refY, height, depth) {
+      let best = null;
+      for (const off of FOOT_OFFSETS) {
+        const origin = new THREE.Vector3(x + off.dx, refY + height, z + off.dz);
+        const ray = new THREE.Raycaster(origin, new THREE.Vector3(0, -1, 0), 0.01, depth);
+        const hits = ray.intersectObjects(collidableMeshes);
+        if (hits.length > 0) {
+          const hitY = hits[0].point.y;
+          if (best === null || hitY > best) best = hitY;
+        }
+      }
+      return best;
+    }
+
+    function isPositionOnGround(x, z, refY) {
+      if (!worldMesh) return true;
+      const bestY = raycastGroundBest(x, z, refY, GROUND_CHECK_HEIGHT, GROUND_CHECK_DEPTH);
+      if (bestY === null) return false;
+      return (refY - bestY) <= MAX_STEP_DROP;
+    }
+
+    function pointInBlockedZone(px, pz) {
+      let inside = false;
+      const poly = BLOCKED_ZONES;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i].cx, zi = poly[i].cz, xj = poly[j].cx, zj = poly[j].cz;
+        const intersect = ((zi > pz) !== (zj > pz)) && (px < (xj - xi) * (pz - zi) / (zj - zi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function distanceToSegment(px, pz, x1, z1, x2, z2) {
+      const A = px - x1, B = pz - z1, C = x2 - x1, D = z2 - z1;
+      const dot = A * C + B * D, lenSq = C * C + D * D;
+      let param = lenSq !== 0 ? dot / lenSq : -1;
+      let xx = param < 0 ? x1 : param > 1 ? x2 : x1 + param * C;
+      let zz = param < 0 ? z1 : param > 1 ? z2 : z1 + param * D;
+      return Math.sqrt((px - xx) ** 2 + (pz - zz) ** 2);
+    }
+
+    function isTouchingWell(px, pz) {
+      for (let e of WELL_EDGES) {
+        if (distanceToSegment(px, pz, e.x1, e.z1, e.x2, e.z2) < 1.2) return true;
+      }
+      return false;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SKELETON
+    // ═══════════════════════════════════════════════════════════
+    function animateSkeletonApproach() {
+      document.getElementById('objective-banner').classList.remove('hidden');
+      document.getElementById('objective-text').textContent = 'Capitulo I — La Casa del Lenador Olvidado';
+      let steps = 0;
+      const iv = setInterval(() => {
+        if (!skeletonMesh || !playerMesh) { clearInterval(iv); return; }
+        steps++;
+        const dir = playerMesh.position.clone().sub(skeletonMesh.position);
+        dir.y = 0; const dist = dir.length();
+        if (dist > 2.2) {
+          dir.normalize().multiplyScalar(0.05);
+          skeletonMesh.position.add(dir);
+          skeletonMesh.rotation.y = Math.atan2(dir.x, dir.z);
+        } else {
+          clearInterval(iv);
+          const eyeLight = new THREE.PointLight(0x9900ff, 2, 3);
+          eyeLight.position.set(0, 1.6, 0);
+          skeletonMesh.add(eyeLight);
+          setTimeout(() => startSkeletonDialog(), 600);
+        }
+        if (steps >= 120) clearInterval(iv);
+      }, 16);
+    }
+
+    function startSkeletonDialog() {
+      skeletonTalked = true; gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      dialogQueue = [
+        { speaker: 'Skeleton Warrior', text: 'Las palabras simples ya no protegen este lugar.' },
+        { speaker: 'Skeleton Warrior', text: 'Demuestra que recuerdas la magia verdadera.' },
+        { speaker: 'La Casa del Escriba Perdido', text: 'Hace años vivia aqui el ultimo escriba del bosque.' },
+        { speaker: 'La Casa del Escriba Perdido', text: 'Antes de desaparecer escondio un fragmento de una Palabra Maestra.' },
+        { speaker: 'La Casa del Escriba Perdido', text: 'Pero protegio su casa con tres sellos magicos.' },
+        { speaker: 'La Casa del Escriba Perdido', text: 'Ahora tienes una mision: romper los tres sellos.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        gamePhase = 'explore';
+        document.getElementById('objective-banner').classList.remove('hidden');
+        document.getElementById('objective-text').textContent = 'Sello I: Encuentra el Diario del Escriba';
+        setTimeout(() => openSello1(), 1500);
+      };
+      showDialog();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  GAME LOOP
+    // ═══════════════════════════════════════════════════════════
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+      if (!scene3D || !renderer3D) return;
+      const dt = clock3D.getDelta();
+      if (gamePhase === 'explore') { movePlayer(dt); snapPlayerToGround(); }
+      animateRunes(dt);
+      updateCamera(dt);
+      if (playerMixer) playerMixer.update(dt);
+
+      if (ancianaMesh && playerMesh) {
+        const dist = playerMesh.position.distanceTo(ancianaMesh.position);
+        const hint = ancianaMesh.children.find(c => c.userData.isHint);
+        if (hint) hint.visible = dist < 5 && gamePhase === 'explore';
+      }
+
+      if (hasGrimoire && !wellActivated && playerMesh) {
+        const p = playerMesh.position;
+        if (isTouchingWell(p.x, p.z)) {
+          document.getElementById('objective-banner').classList.remove('hidden');
+          document.getElementById('objective-text').textContent = 'Presiona E para restaurar la palabra AGUA';
+        }
+      }
+
+      if (barbarianMesh && barbarianMesh.userData.mixer) barbarianMesh.userData.mixer.update(dt);
+      if (barbarianMesh && playerMesh) {
+        const distB = playerMesh.position.distanceTo(barbarianMesh.position);
+        const hintB = barbarianMesh.children.find(c => c.userData.isBarbarianHint);
+        if (hintB) hintB.visible = distB < 5 && gamePhase === 'explore';
+      }
+      if (skeletonMesh && skeletonMesh.userData.mixer) skeletonMesh.userData.mixer.update(dt);
+      if (skeletonMesh && skeletonMesh.visible && playerMesh && !skeletonTalked) {
+        const distSk = playerMesh.position.distanceTo(skeletonMesh.position);
+        const hintSk = skeletonMesh.children.find(c => c.userData.isSkeletonHint);
+        if (distSk < 8 && !skeletonActivated) { skeletonActivated = true; animateSkeletonApproach(); }
+        if (hintSk) hintSk.visible = distSk < 4 && gamePhase === 'explore';
+      }
+
+      renderMinimap();
+      renderer3D.render(scene3D, camera3D);
+    }
+
+    function snapPlayerToGround() {
+      if (!playerMesh || !worldMesh || !isGrounded) return;
+      const bestY = raycastGroundBest(playerMesh.position.x, playerMesh.position.z, playerMesh.position.y, 4, 20);
+      if (bestY !== null) {
+        const diff = bestY - playerMesh.position.y;
+        if (diff > MAX_STEP_CLIMB) return;
+        playerMesh.position.y += diff * (diff > 0.4 ? 0.55 : 0.6);
+      }
+      checkTeleport();
+    }
+
+    function spawnPatrolNPC(modelPath, waypoints, options = {}) {
+      const group = new THREE.Group();
+      const loader = new THREE.GLTFLoader();
+      loader.load(modelPath, (gltf) => {
+        const m = gltf.scene;
+        const box = new THREE.Box3().setFromObject(m);
+        m.scale.setScalar((options.height || 1.9) / box.getSize(new THREE.Vector3()).y);
+        const box2 = new THREE.Box3().setFromObject(m);
+        m.position.y = -box2.min.y;
+        m.traverse(c => { if (c.isMesh) c.castShadow = true; });
+        group.add(m);
+        if (gltf.animations.length) {
+          const mx = new THREE.AnimationMixer(m);
+          const walkClip = gltf.animations.find(a => a.name.toLowerCase().includes('walk')) || gltf.animations[0];
+          mx.clipAction(walkClip).play();
+          group.userData.mixer = mx;
+        }
+      }, undefined, () => {
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.22, 0.28, 1.8, 8),
+          new THREE.MeshStandardMaterial({ color: 0x556b2f })
+        );
+        body.position.y = 0.9; group.add(body);
+      });
+      group.position.set(waypoints[0].x, waypoints[0].y || 0, waypoints[0].z);
+      scene3D.add(group);
+
+      patrolNPCs.push({ mesh: group, waypoints, idx: 0, speed: options.speed || 0.025 });
+      return group;
+    }
+
+    function updatePatrolNPCs(dt) {
+      patrolNPCs.forEach(p => {
+        if (!p.mesh.visible) return;
+        const target = p.waypoints[p.idx];
+        const dir = new THREE.Vector3(target.x - p.mesh.position.x, 0, target.z - p.mesh.position.z);
+        const dist = dir.length();
+        if (dist < 0.4) {
+          p.idx = (p.idx + 1) % p.waypoints.length;
+        } else {
+          dir.normalize().multiplyScalar(p.speed);
+          p.mesh.position.x += dir.x;
+          p.mesh.position.z += dir.z;
+          p.mesh.rotation.y = Math.atan2(dir.x, dir.z);
+        }
+        if (p.mesh.userData.mixer) p.mesh.userData.mixer.update(dt);
+      });
+    }
+
+    // DESPUES
+    function spawnWitch() {
+      if (witchMesh) { witchMesh.visible = true; return; }
+      const group = new THREE.Group();
+      const loader = new THREE.GLTFLoader();
+      loader.load('assets/models/villains/Mage.glb', (gltf) => {
+        const m = gltf.scene;
+        const box = new THREE.Box3().setFromObject(m);
+        m.scale.setScalar(1.9 / box.getSize(new THREE.Vector3()).y);
+        const box2 = new THREE.Box3().setFromObject(m);
+        m.position.y = -box2.min.y;
+        m.traverse(c => { if (c.isMesh) c.castShadow = true; });
+        group.add(m);
+        if (gltf.animations.length) {
+          const mx = new THREE.AnimationMixer(m);
+          const clip = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+          mx.clipAction(clip).play();
+          group.userData.mixer = mx;
+        }
+      }, undefined, () => {
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.22, 0.28, 1.9, 8),
+          new THREE.MeshStandardMaterial({ color: 0x4a8a7a })
+        );
+        body.position.y = 0.95; group.add(body);
+      });
+      group.position.set(-30.87, -1.61, 103.27); // posición exacta verificada con tecla C
+      scene3D.add(group);
+      witchMesh = group;
+    }
+
+
+
+    // DESPUES
+    function startWitchDialog() {
+      witchTalked = true;
+      gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      document.getElementById('objective-text').textContent = 'Hablando con la Bruja del Lago';
+      dialogQueue = [
+        { speaker: 'Bruja del Lago', text: 'Vienes desde el rio con las manos manchadas de tinta vieja...' },
+        { speaker: 'Bruja del Lago', text: 'Aprendiste las reglas de las agudas, llanas y esdrujulas.' },
+        { speaker: 'Bruja del Lago', text: 'Pero saber la regla no es lo mismo que sentir la palabra.' },
+        { speaker: 'Bruja del Lago', text: 'Te pondre a prueba con un unico hechizo de tres voces.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => { setTimeout(openWitchTrial, 600); };
+      showDialog();
+    }
+
+    const WITCH_TRIALS = [
+      {
+        word: 'CAMION', display: 'CAMIÓN', blanks: [2, 4],
+        riddle: 'La primera voz: una palabra aguda que rueda sobre el camino... su fuerza cae al final.'
+      },
+      {
+        word: 'FACIL', display: 'FÁCIL', blanks: [0, 1],
+        riddle: 'La segunda voz: una palabra llana, sencilla de decir... pero no de escribir.'
+      },
+      {
+        word: 'RAPIDO', display: 'RÁPIDO', blanks: [0, 1],
+        riddle: 'La voz final: una esdrujula veloz como el viento sobre el lago.'
+      },
+    ];
+
+    function openWitchTrial() {
+      witchTrialStage = 0;
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      showScreen('screen-witch-trial');
+      setTimeout(renderWitchTrial, 600);
+    }
+
+    function renderWitchTrial() {
+      const t = WITCH_TRIALS[witchTrialStage];
+      document.getElementById('witch-riddle-text').textContent = t.riddle;
+      document.getElementById('witch-feedback').textContent = '';
+
+      const runeRow = document.getElementById('witch-rune-display');
+      const inputRow = document.getElementById('witch-input-row');
+      runeRow.innerHTML = '';
+      inputRow.innerHTML = '';
+
+      for (let i = 0; i < t.display.length; i++) {
+        const span = document.createElement('span');
+        span.className = 'rune-char';
+        if (t.blanks.includes(i)) {
+          span.id = 'wr' + i;
+          span.textContent = '?';
+          runeRow.appendChild(span);
+
+          const input = document.createElement('input');
+          input.className = 'puzzle-letter-input';
+          input.maxLength = 1; input.id = 'wl' + i;
+          input.autocomplete = 'off'; input.spellcheck = false;
+          input.addEventListener('input', () => {
+            input.value = input.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/g, '');
+          });
+          inputRow.appendChild(input);
+        } else {
+          span.classList.add('revealed');
+          span.textContent = t.display[i];
+          runeRow.appendChild(span);
+        }
+      }
+    }
+
+    window.checkWitchTrial = function () {
+      const t = WITCH_TRIALS[witchTrialStage];
+      let assembled = '';
+      for (let i = 0; i < t.display.length; i++) {
+        assembled += t.blanks.includes(i)
+          ? (document.getElementById('wl' + i).value || '').toUpperCase()
+          : t.display[i];
+      }
+
+      const fb = document.getElementById('witch-feedback');
+      if (assembled === t.display) {
+        t.blanks.forEach(i => document.getElementById('wr' + i).classList.add('revealed'));
+        fb.textContent = 'El agua del lago responde a tu hechizo...';
+        fb.className = 'ok';
+        addXP(90);
+        witchTrialStage++;
+        if (witchTrialStage >= WITCH_TRIALS.length) setTimeout(finishWitchTrial, 2000);
+        else setTimeout(renderWitchTrial, 1800);
+      } else {
+        fb.textContent = 'El hechizo se deshace entre tus dedos...';
+        fb.className = 'err';
+        takeDamage(HP_WRONG_PENALTY);
+      }
+    };
+
+    function finishWitchTrial() {
+      showScreen('screen-game');
+      gamePhase = 'dialog';
+      setTimeout(() => {
+        dialogQueue = [
+          { speaker: 'Bruja del Lago', text: 'Las tres reglas viven en ti, guardian de la lengua.' },
+          { speaker: 'Bruja del Lago', text: 'Morgalix no podra deshacer lo que ya comprendes.' },
+          { speaker: 'Bruja del Lago', text: 'El reino recuerda sus palabras... gracias a ti.' },
+        ];
+        dialogIndex = 0;
+        dialogCallback = () => {
+          gamePhase = 'explore';
+          document.getElementById('objective-banner').classList.remove('hidden');
+          document.getElementById('objective-text').textContent = 'El Lago ha sido liberado. Tu leyenda crece.';
+          addXP(150);
+        };
+        releasePointerLockIfNeeded();
+        showDialog();
+      }, 800);
+    }
+
+    function checkTeleport() {
+      if (!playerMesh || teleportCooldown) return;
+      const p = playerMesh.position;
+      if (currentMap === 'village') {
+        if (p.x < -120 && p.x > -150 && p.z < -55 && p.z > -70) {
+          if (!wellActivated) {
+            document.getElementById('objective-banner').classList.remove('hidden');
+            document.getElementById('objective-text').textContent = 'Debes restaurar el pozo antes de adentrarte al bosque';
+            return;
+          }
+          teleportCooldown = true;
+          openTeleportMenu();
+          setTimeout(() => teleportCooldown = false, 2000);
+        }
+      }
+      if (currentMap === 'forest') {
+        if (p.x > 19 && p.x < 29.9 && p.z > -8.3 && p.z < 9.7) {
+          teleportCooldown = true;
+          openTeleportMenu();
+          setTimeout(() => teleportCooldown = false, 2000);
+        }
+      }
+    }
+
+    function movePlayer(dt) {
+      if (!playerMesh) return;
+      const dir = new THREE.Vector3();
+      const forward = new THREE.Vector3(-Math.sin(cameraYaw), 0, -Math.cos(cameraYaw));
+      const right = new THREE.Vector3(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
+      if (keys['KeyW'] || keys['ArrowUp']) dir.add(forward);
+      if (keys['KeyS'] || keys['ArrowDown']) dir.sub(forward);
+      if (keys['KeyA'] || keys['ArrowLeft']) dir.sub(right);
+      if (keys['KeyD'] || keys['ArrowRight']) dir.add(right);
+
+      const moving = dir.lengthSq() > 0;
+      const running = moving && keys['ShiftLeft'];
+      const speed = running ? MOVE_SPEED * 2.8 : MOVE_SPEED;
+
+      // Anim state machine
+      if (!isJumping) { // ✅ SOLO si no estás saltando
+        if (!moving) {
+          if (isWalking || isRunning) {
+            playerWalkAction && playerWalkAction.fadeOut(0.2);
+            playerRunAction && playerRunAction.fadeOut(0.2);
+            playerIdleAction && playerIdleAction.reset().fadeIn(0.2).play();
+            isWalking = false;
+            isRunning = false;
+          }
+        } else if (running) {
+          if (!isRunning) {
+            playerIdleAction && playerIdleAction.fadeOut(0.15);
+            playerWalkAction && playerWalkAction.fadeOut(0.15);
+
+            if (playerRunAction) {
+              playerRunAction.reset().fadeIn(0.15).play();
+            }
+
+            isRunning = true;
+            isWalking = false;
+          }
+        } else {
+          if (!isWalking) {
+            playerIdleAction && playerIdleAction.fadeOut(0.2);
+            playerRunAction && playerRunAction.fadeOut(0.2);
+
+            if (playerWalkAction) {
+              playerWalkAction.reset().fadeIn(0.2).play();
+            }
+
+            isWalking = true;
+            isRunning = false;
+          }
+        }
+      }
+
+      dir.normalize().multiplyScalar(speed);
+      if (moving) playerMesh.rotation.y = Math.atan2(dir.x, dir.z);
+
+      const currentY = playerMesh.position.y;
+
+      function tryMove(dx, dz) {
+        const nx = playerMesh.position.x + dx;
+        const nz = playerMesh.position.z + dz;
+
+        if (pointInBlockedZone(nx, nz)) return false;
+        if (!isPositionOnGround(nx, nz, currentY)) return false;
+        if (isCollidingWithNPC(nx, nz)) return false; // ✅ NUEVO
+
+        playerMesh.position.x = nx;
+        playerMesh.position.z = nz;
+        return true;
+      }
+
+      // Jump physics
+      if (!isGrounded) {
+        jumpVelocityY -= GRAVITY;
+        playerMesh.position.y += jumpVelocityY;
+        if (worldMesh) {
+          const origin = playerMesh.position.clone(); origin.y += 2;
+          const ray = new THREE.Raycaster(origin, new THREE.Vector3(0, -1, 0), 0.01, 20);
+          const hits = ray.intersectObjects(collidableMeshes);
+          if (hits.length > 0 && jumpVelocityY < 0) {
+            const groundY = hits[0].point.y;
+            if (playerMesh.position.y <= groundY) { playerMesh.position.y = groundY; jumpVelocityY = 0; landJump(); }
+          }
+        }
+      }
+
+      if (!tryMove(dir.x, dir.z)) { tryMove(dir.x, 0); tryMove(0, dir.z); }
+
+      // Wall collision
+      if (worldMesh) {
+        const dirs = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, -1)];
+        const origin = playerMesh.position.clone(); origin.y += 1.2;
+        const PLAYER_RADIUS = 0.5, PUSH_EPSILON = 0.03;
+        const correction = new THREE.Vector3();
+        dirs.forEach(d => {
+          const ray = new THREE.Raycaster(origin, d, 0.01, PLAYER_RADIUS);
+          const hits = ray.intersectObjects(collidableMeshes);
+          if (hits.length > 0 && (hits[0].point.y - playerMesh.position.y) >= 0.6) {
+            const penetration = PLAYER_RADIUS - hits[0].distance;
+            if (penetration > PUSH_EPSILON) correction.addScaledVector(d, -penetration);
+          }
+        });
+        if (correction.lengthSq() > 0) playerMesh.position.add(correction);
+      }
+    }
+
+    function updateCamera(dt) {
+      if (!playerMesh) return;
+      if (smoothedPlayerY === 0) smoothedPlayerY = playerMesh.position.y;
+      const ySmooth = 1 - Math.exp(-12 * dt);
+      smoothedPlayerY += (playerMesh.position.y - smoothedPlayerY) * ySmooth;
+      const head = new THREE.Vector3(playerMesh.position.x, smoothedPlayerY + 1.4, playerMesh.position.z);
+
+      if (cameraMode === 'first') {
+        playerMesh.traverse(c => { if (c.isMesh) c.visible = false; });
+        camera3D.position.copy(head);
+        const pitch = cameraPitchFirst;
+        const dir = new THREE.Vector3(
+          -Math.sin(cameraYaw) * Math.cos(pitch),
+          Math.sin(pitch),
+          -Math.cos(cameraYaw) * Math.cos(pitch)
+        );
+        camera3D.lookAt(head.clone().add(dir));
+      } else {
+        playerMesh.traverse(c => { if (c.isMesh) c.visible = true; });
+        const pitch = cameraPitchThird;
+        const cx = head.x + CAM_DIST * Math.sin(cameraYaw) * Math.cos(pitch);
+        let cy = head.y + CAM_DIST * Math.sin(pitch);
+        const cz = head.z + CAM_DIST * Math.cos(cameraYaw) * Math.cos(pitch);
+
+        if (collidableMeshes.length > 0) {
+          const camGroundOrigin = new THREE.Vector3(cx, head.y + 10, cz);
+          const camGroundRay = new THREE.Raycaster(camGroundOrigin, new THREE.Vector3(0, -1, 0), 0.01, 30);
+          const camGroundHits = camGroundRay.intersectObjects(collidableMeshes);
+          if (camGroundHits.length > 0) {
+            const minCy = camGroundHits[0].point.y + 0.4;
+            if (cy < minCy) cy = minCy;
+          }
+        }
+
+        const camSmooth = 1 - Math.exp(-20 * dt);
+        camera3D.position.lerp(new THREE.Vector3(cx, cy, cz), camSmooth);
+        camera3D.lookAt(head);
+      }
+    }
+
+    function animateRunes(dt) {
+      if (!scene3D) return;
+      scene3D.traverse(obj => {
+        if (obj.userData.isRune && obj.userData.runeOrbit) {
+          const r = obj.userData.runeOrbit;
+          r.angle += r.speed * dt; const c = r.center;
+          obj.position.x = c.x + Math.cos(r.angle) * 1.8;
+          obj.position.z = c.z + Math.sin(r.angle) * 1.8;
+          obj.position.y = c.y + 0.5 + Math.sin(r.angle * 2) * 0.3;
+        }
+      });
+    }
+
+    function onResize3D() {
+      const canvas = document.getElementById('game-canvas');
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      camera3D.aspect = w / h; camera3D.updateProjectionMatrix();
+      renderer3D.setSize(w, h);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  BOOTSTRAP
+    // ═══════════════════════════════════════════════════════════
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        hideLoading();
+        showScreen('screen-title');
+        initTitleScreen();
+      }, 1200);
+    });
+  </script>
+</body>
+
+</html>
