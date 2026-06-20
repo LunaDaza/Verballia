@@ -1757,6 +1757,91 @@
       </div>
     </div>
   </div>
+  <!-- ══════════════════════════════════════════
+     SCREEN FINAL — VICTORIA
+══════════════════════════════════════════ -->
+  <div id="screen-ending" class="screen" style="background:#0a0806;overflow:hidden;">
+    <div id="ending-bg" style="
+      position:absolute;inset:0;
+      background-image:url('assets/img/title.png');
+      background-size:cover;background-position:center top;
+      filter:brightness(0.4) saturate(0.6);
+      z-index:0;
+      animation:titleBgFade 3s ease forwards;
+    "></div>
+    <div style="
+      position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% 60%,transparent 20%,rgba(10,8,6,0.85) 80%),
+                 linear-gradient(to top,rgba(10,8,6,1) 0%,transparent 50%);
+      z-index:1;
+    "></div>
+    <div id="ending-content" style="
+      position:relative;z-index:2;
+      text-align:center;
+      padding:2rem;
+      max-width:680px;
+      opacity:0;
+      transform:translateY(30px);
+      transition:opacity 1.8s ease 0.8s, transform 1.8s ease 0.8s;
+    ">
+      <div style="
+        font-family:'Cinzel',serif;font-size:0.62rem;
+        letter-spacing:0.38em;color:#b8922a;
+        text-transform:uppercase;margin-bottom:1.2rem;opacity:0.8;
+      ">El Grimorio ha sido restaurado</div>
+      <h1 style="
+        font-family:'Cinzel',serif;
+        font-size:clamp(2.4rem,7vw,4.8rem);
+        font-weight:900;color:#e8d5a3;
+        letter-spacing:0.1em;line-height:0.95;
+        margin-bottom:0.6rem;
+        text-shadow:0 0 60px rgba(184,146,42,0.4);
+      ">VERBALIA</h1>
+      <div style="
+        height:1px;
+        background:linear-gradient(to right,transparent,#b8922a,transparent);
+        margin:1.4rem auto;width:320px;
+      "></div>
+      <p style="
+        font-family:'Crimson Text',serif;font-style:italic;
+        font-size:clamp(1rem,2.5vw,1.35rem);
+        color:rgba(232,213,163,0.85);line-height:1.8;
+        margin-bottom:2.4rem;
+      " id="ending-quote">
+        "Las palabras no mueren mientras alguien las recuerde.<br>
+        Morgalix cayó. El reino recuerda.<br>
+        Y tú, guardián, siempre serás su voz."
+      </p>
+      <div style="
+        font-family:'Cinzel',serif;font-size:0.72rem;
+        color:#c8b87a;letter-spacing:0.18em;
+        margin-bottom:2rem;opacity:0.7;
+      " id="ending-xp-display"></div>
+      <button id="btn-play-again" style="
+        font-family:'Cinzel',serif;font-size:0.82rem;
+        letter-spacing:0.24em;text-transform:uppercase;
+        color:#0a0806;
+        background:linear-gradient(135deg,#b8922a 0%,#d4a835 100%);
+        border:none;padding:0.85em 2.4em;cursor:pointer;
+        transition:all 0.25s;opacity:0;
+        animation:fadeInBtn 0.8s ease 3.5s forwards;
+      ">Volver al inicio</button>
+    </div>
+    <div id="ending-particles" style="position:absolute;inset:0;z-index:1;pointer-events:none;"></div>
+  </div>
+
+  <style>
+    @keyframes fadeInBtn { to { opacity:1; } }
+    @keyframes particleFly {
+      0%   { opacity:0; transform:translateY(0) scale(0.5); }
+      20%  { opacity:1; }
+      100% { opacity:0; transform:translateY(-120px) scale(1.2); }
+    }
+    #ending-content.visible {
+      opacity:1 !important;
+      transform:translateY(0) !important;
+    }
+  </style>
 
   <script>
     // ═══════════════════════════════════════════════════════════
@@ -2030,9 +2115,8 @@
         return [
           { npc: witchMesh, color: '#5fcf9a' },
         ];
+        // Skeleton_Rogue no aparece en el lago
       }
-      return [];
-    }
 
     function renderMinimap() {
       const canvas = document.getElementById('minimap');
@@ -2123,17 +2207,59 @@
     // ═══════════════════════════════════════════════════════════
     //  AUDIO
     // ═══════════════════════════════════════════════════════════
+    // ── Configuración de audio por mapa ─────────────────────────
+    const MAP_AUDIO = {
+      title:   { file: 'assets/audio/title_sounds.mp3',   startAt: 340  }, // 5:40
+      village: { file: 'assets/audio/ambient_village.mp3', startAt: 0    },
+      forest:  { file: 'assets/audio/title_sounds.mp3',   startAt: 264  }, // 4:24
+      river:   { file: 'assets/audio/title_sounds.mp3',   startAt: 160  }, // 2:40
+      lake:    { file: 'assets/audio/title_sounds.mp3',   startAt: 340  }, // 5:40
+    };
+
+    let currentMapAudio = null;
+
     function initAudio() {
-      bgMusic = new Audio('assets/audio/Ancient Evil Awakens  D&DTTRPG Music  1 Hour.mp3');
-      bgMusic.loop = true; bgMusic.volume = 0.25;
-      cinematicAudio = new Audio('assets/audio/cinematica.mp3');
-      cinematicAudio.volume = 0.7;
+      try {
+        cinematicAudio = new Audio('assets/audio/cinematica.mp3');
+        cinematicAudio.volume = 0.7;
+      } catch(e) { cinematicAudio = null; }
+      // bgMusic se maneja por mapa ahora
+      bgMusic = null;
     }
-    function playBgMusic() { if (!soundEnabled || !bgMusic) return; bgMusic.play().catch(() => { }); }
-    function stopBgMusic() { bgMusic && bgMusic.pause(); }
+
+    function playMapAudio(mapKey) {
+      // Detener audio anterior
+      if (currentMapAudio) {
+        currentMapAudio.pause();
+        currentMapAudio = null;
+      }
+      if (!soundEnabled) return;
+      const cfg = MAP_AUDIO[mapKey];
+      if (!cfg) return;
+      try {
+        const audio = new Audio(cfg.file);
+        audio.volume = 0.28;
+        audio.loop = true;
+        audio.currentTime = cfg.startAt;
+        audio.play().catch(() => {});
+        currentMapAudio = audio;
+        bgMusic = audio; // compatibilidad con stopBgMusic/playBgMusic existentes
+      } catch(e) {}
+    }
+
+    function playBgMusic() {
+      // Compatibilidad — ahora se usa playMapAudio
+      if (!soundEnabled || !currentMapAudio) return;
+      currentMapAudio.play().catch(() => {});
+    }
+
+    function stopBgMusic() {
+      if (currentMapAudio) { currentMapAudio.pause(); }
+    }
+
     function playFx(src, vol = 0.6) {
       if (!soundEnabled) return;
-      const a = new Audio(src); a.volume = vol; a.play().catch(() => { });
+      try { const a = new Audio(src); a.volume = vol; a.play().catch(() => {}); } catch(e) {}
     }
     function playImpact() { playFx('assets/audio/Efeitos Sonoros - IMPACTO.mp3', 0.5); }
     function playAhora() { playFx('assets/audio/AHORA.mp3', 0.5); }
@@ -2161,7 +2287,9 @@
           id === 'screen-sello4' ||
           id === 'screen-river1' ||
           id === 'screen-river2' ||
-          id === 'screen-river3'
+          id === 'screen-river3' ||
+          id === 'screen-witch-trial' ||
+          id === 'screen-morgalix-battle'
         ) {
           hud.style.display = 'block';
         } else {
@@ -2183,9 +2311,8 @@
     // ═══════════════════════════════════════════════════════════
     //  TITLE SCREEN
     // ═══════════════════════════════════════════════════════════
-    function initTitleScreen() {
-      document.getElementById('btn-start').addEventListener('click', () => {
-        playBgMusic();
+    document.getElementById('btn-start').addEventListener('click', () => {
+        stopBgMusic();
         showScreen('screen-cinematic');
         startCinematic();
       });
@@ -2205,6 +2332,8 @@
       });
 
       initAudio();
+      // Audio del title screen arranca en 5:40
+      setTimeout(() => playMapAudio('title'), 1400);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -2223,9 +2352,9 @@
       const video = document.getElementById('cinematic-video');
       video.pause();
       cinematicAudio && cinematicAudio.pause();
-      playBgMusic();
       showScreen('screen-charselect');
       buildCharSelect();
+      // Mantiene el audio del title mientras está en char select
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -2502,6 +2631,7 @@
       window.addEventListener('resize', onResize3D);
 
       setTimeout(() => document.getElementById('objective-banner').classList.remove('hidden'), 2000);
+      playMapAudio('village');
     }
 
     function setupLights() {
@@ -3230,7 +3360,13 @@
           }
 
           if (skeletonMesh) {
-            skeletonMesh.visible = (dest === 'forest');
+            skeletonMesh.visible = (dest === 'forest' || dest === 'river');
+          }
+          if (skeleton2Mesh) {
+            skeleton2Mesh.visible = (dest === 'river');
+          }
+          if (skeleton3Mesh) {
+            skeleton3Mesh.visible = (dest === 'river');
           }
 
           if (dest === 'forest') {
@@ -3391,21 +3527,221 @@
     // ═══════════════════════════════════════════════════════════
     //  DIALOGS
     // ═══════════════════════════════════════════════════════════
-    function startAncianaDialog1() {
-      ancianaTalked = true;
-      document.getElementById('objective-banner').classList.add('hidden');
+    let morgalixPhase = 0;
+    let morgalixHP = 3;
+
+    function startWitchDialog() {
+      witchTalked = true;
+      morgalixPhase = 0;
+      morgalixHP = 3;
       gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+
+      // Efecto de luz amenazante en Morgalix
+      if (witchMesh) {
+        const evilLight = new THREE.PointLight(0x8800ff, 3, 8);
+        evilLight.position.set(0, 2, 0);
+        evilLight.userData.isMorgalixLight = true;
+        witchMesh.add(evilLight);
+      }
+
       dialogQueue = [
-        { speaker: 'Informante', text: 'Llegas tarde... la anciana ya no esta.' },
-        { speaker: 'Informante', text: 'Antes de desaparecer hablo de ti. Dijo que solo tu puedes restaurar las palabras perdidas.' },
-        { speaker: 'Informante', text: 'Morgalix robo los hechizos del reino... sin ellos, todo esta muriendo.' },
-        { speaker: 'Informante', text: 'Toma este grimorio. Es tu unica herramienta para devolver el equilibrio.' },
-        { speaker: 'Informante', text: 'Empieza por el pozo del pueblo. Sin agua... no hay vida.' },
+        { speaker: 'Morgalix', text: 'Conque llegaste hasta aquí... Impresionante para un simple mortal.' },
+        { speaker: 'Morgalix', text: 'Fui yo quien robó las palabras. Yo quien selló los ríos y corrompió los bosques.' },
+        { speaker: 'Morgalix', text: 'Sin el lenguaje, este reino me pertenece. Nadie puede nombrarse libre si no conoce las palabras.' },
+        { speaker: 'Morgalix', text: 'Pero tú... tú sí conoces las palabras. Eso me resulta... peligroso.' },
+        { speaker: 'Morgalix', text: 'Entonces deberás demostrar que las dominas completamente. ¡Tres fases! ¡Y no habrá piedad!' },
       ];
       dialogIndex = 0;
-      dialogCallback = () => { gamePhase = 'item'; showItemPopup(); };
+      dialogCallback = () => { setTimeout(() => openMorgalixPhase(0), 600); };
       showDialog();
     }
+
+    const MORGALIX_PHASES = [
+      {
+        title: 'Morgalix — Fase I: El Conjuro Agudo',
+        subtitle: 'Morgalix lanza su primer hechizo: las palabras agudas.',
+        question: '"El río _____ al romper el alba, liberando su magia antigua."',
+        hint: 'Las agudas llevan tilde cuando terminan en <strong style="color:#5fcf9a">vocal, n o s</strong>.',
+        options: ['llego', 'llegó', 'llégó'],
+        correct: 1,
+        failText: 'El hechizo de Morgalix te golpea... las aguas retroceden.',
+        winText: '¡Correcto! Morgalix retrocede un paso. ¡Sigue atacando!',
+        dialogAfter: [
+          { speaker: 'Morgalix', text: '¡Imposible! Conoces las agudas...' },
+          { speaker: 'Morgalix', text: 'Pero las llanas son otro asunto. ¡Segunda fase!' },
+        ],
+      },
+      {
+        title: 'Morgalix — Fase II: El Conjuro Llano',
+        subtitle: 'Morgalix intensifica su poder con las palabras llanas.',
+        question: '"El guardián del lago sostenía un _____ mágico que brillaba en la oscuridad."',
+        hint: 'Las llanas llevan tilde cuando <strong style="color:#5fcf9a">NO</strong> terminan en vocal, n o s. <em>árbol</em> termina en L → tilde.',
+        options: ['arbol', 'árbol', 'arból'],
+        correct: 1,
+        failText: 'La niebla oscura de Morgalix te envuelve...',
+        winText: '¡Bien! El grimorio brilla con fuerza. ¡Un golpe más!',
+        dialogAfter: [
+          { speaker: 'Morgalix', text: '¡No puede ser! Las llanas también las conoces...' },
+          { speaker: 'Morgalix', text: '¡Última oportunidad! ¡Las esdrújulas son mi arma definitiva!' },
+        ],
+      },
+      {
+        title: 'Morgalix — Fase III: El Conjuro Final',
+        subtitle: '¡Morgalix usa todo su poder! Las palabras esdrújulas.',
+        question: '"La magia más _____ del reino quedó atrapada en el grimorio olvidado."',
+        hint: 'Las esdrújulas llevan tilde <strong style="color:#5fcf9a">SIEMPRE</strong>. La fuerza cae en la antepenúltima sílaba.',
+        options: ['poderosa', 'póderosa', 'poderosa'],
+        correct: 0,
+        failText: 'Morgalix suelta un grito de victoria oscura...',
+        winText: '¡LO LOGRASTE! ¡Morgalix ha sido derrotada!',
+        dialogAfter: [],
+      },
+    ];
+
+    let morgalixFeedbackTimeout = null;
+
+    function openMorgalixPhase(phaseIndex) {
+      morgalixPhase = phaseIndex;
+      const phase = MORGALIX_PHASES[phaseIndex];
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+
+      // Construir pantalla dinámica
+      let screenId = 'screen-morgalix-battle';
+      let screen = document.getElementById(screenId);
+      if (!screen) {
+        screen = document.createElement('div');
+        screen.id = screenId;
+        screen.className = 'screen';
+        screen.style.cssText = 'background:radial-gradient(ellipse at 50% 50%,#0a001a 0%,#030008 100%);padding:2rem 1rem;overflow:hidden;';
+        document.body.appendChild(screen);
+      }
+
+      const hpBars = '▮'.repeat(morgalixHP) + '▯'.repeat(3 - morgalixHP);
+
+      screen.innerHTML = `
+        <div style="max-width:600px;width:94%;text-align:center;position:relative;">
+          <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.28em;color:#aa44ff;text-transform:uppercase;margin-bottom:0.4rem;">Jefa Final</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#cc44ff;margin-bottom:0.3rem;letter-spacing:0.1em;text-shadow:0 0 20px #8800ff;">${phase.title}</div>
+          <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:#aa44ff;letter-spacing:0.12em;margin-bottom:1rem;">
+            Vida de Morgalix: <span style="color:#cc44ff;letter-spacing:0.06em;">${hpBars}</span>
+          </div>
+          <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.2rem;font-style:italic;">${phase.subtitle}</div>
+          <div style="
+            background:rgba(136,0,255,.07);
+            border:1px solid rgba(136,0,255,0.4);
+            border-top:2px solid #cc44ff;
+            padding:1rem 1.4rem;
+            font-size:1.05rem;color:var(--parchment);
+            font-family:'Crimson Text',serif;
+            margin-bottom:1rem;
+          ">${phase.question}</div>
+          <div style="
+            background:rgba(136,0,255,.04);
+            border:1px solid rgba(136,0,255,0.2);
+            padding:0.8rem 1.2rem;
+            font-size:0.9rem;color:rgba(232,213,163,0.75);
+            font-family:'Crimson Text',serif;
+            margin-bottom:1.4rem;
+          ">${phase.hint}</div>
+          <div style="display:flex;flex-direction:column;gap:0.9rem;margin-bottom:1.2rem;" id="morgalix-options">
+            ${phase.options.map((opt, i) => `
+              <button class="echo-btn" id="mb-btn${i}" style="border-color:rgba(136,0,255,0.35);" onclick="checkMorgalixAnswer(${i})">
+                ${'ABC'[i]}) ${opt}
+              </button>
+            `).join('')}
+          </div>
+          <div id="morgalix-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+        </div>
+        <div id="morgalix-particles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+      `;
+
+      // Partículas de fondo
+      spawnMorgalixParticles();
+
+      showScreen(screenId);
+    }
+
+    function spawnMorgalixParticles() {
+      const container = document.getElementById('morgalix-particles');
+      if (!container) return;
+      for (let i = 0; i < 12; i++) {
+        const p = document.createElement('div');
+        const size = 4 + Math.random() * 8;
+        p.style.cssText = `
+          position:absolute;
+          width:${size}px;height:${size}px;
+          border-radius:50%;
+          background:rgba(${Math.random() > 0.5 ? '136,0,255' : '200,100,255'},0.6);
+          left:${Math.random() * 100}%;
+          bottom:${Math.random() * 30}%;
+          animation:particleFly ${2 + Math.random() * 3}s ease-in ${Math.random() * 2}s infinite;
+        `;
+        container.appendChild(p);
+      }
+    }
+
+    window.checkMorgalixAnswer = function(selected) {
+      const phase = MORGALIX_PHASES[morgalixPhase];
+      const fb = document.getElementById('morgalix-feedback');
+      const btns = document.querySelectorAll('#morgalix-options .echo-btn');
+      btns.forEach(b => b.style.pointerEvents = 'none');
+
+      if (selected === phase.correct) {
+        btns[selected].classList.add('correct-choice');
+        fb.textContent = phase.winText;
+        fb.style.color = '#7ecb8d';
+        morgalixHP--;
+        addXP(100);
+        playImpact();
+
+        if (morgalixPhase >= MORGALIX_PHASES.length - 1) {
+          // VICTORIA FINAL
+          setTimeout(() => {
+            gamePhase = 'dialog';
+            showScreen('screen-game');
+            setTimeout(() => {
+              dialogQueue = [
+                { speaker: 'Morgalix', text: '¡NOOOO! ¡Imposible! ¡Las tres reglas! ¡Las conoces todas!' },
+                { speaker: 'Morgalix', text: 'El grimorio... se completa... mis hechizos... se deshacen...' },
+                { speaker: 'Morgalix', text: 'Las palabras... siempre fueron más poderosas que yo...' },
+              ];
+              dialogIndex = 0;
+              dialogCallback = () => { setTimeout(triggerVictoryEnding, 800); };
+              releasePointerLockIfNeeded();
+              showDialog();
+            }, 1000);
+          }, 2500);
+        } else {
+          // Siguiente fase
+          if (phase.dialogAfter.length > 0) {
+            setTimeout(() => {
+              gamePhase = 'dialog';
+              showScreen('screen-game');
+              setTimeout(() => {
+                dialogQueue = phase.dialogAfter;
+                dialogIndex = 0;
+                dialogCallback = () => { setTimeout(() => openMorgalixPhase(morgalixPhase + 1), 600); };
+                releasePointerLockIfNeeded();
+                showDialog();
+              }, 800);
+            }, 2200);
+          } else {
+            setTimeout(() => openMorgalixPhase(morgalixPhase + 1), 2200);
+          }
+        }
+      } else {
+        btns[selected].classList.add('wrong-choice');
+        fb.textContent = phase.failText;
+        fb.style.color = '#f09595';
+        takeDamage(HP_WRONG_PENALTY);
+        setTimeout(() => {
+          btns.forEach(b => { b.style.pointerEvents = 'auto'; b.classList.remove('wrong-choice'); });
+          fb.textContent = '';
+        }, 1400);
+      }
+    };
 
     function startWellDialog() {
       gamePhase = 'dialog';
@@ -4136,12 +4472,32 @@
       },
     ];
 
-    function openWitchTrial() {
-      witchTrialStage = 0;
-      gamePhase = 'puzzle';
+    function triggerVictoryEnding() {
+      gamePhase = 'ending';
       releasePointerLockIfNeeded();
-      showScreen('screen-witch-trial');
-      setTimeout(renderWitchTrial, 600);
+
+      // Quitar luz de Morgalix
+      if (witchMesh) {
+        witchMesh.children.forEach(c => { if (c.userData && c.userData.isMorgalixLight) witchMesh.remove(c); });
+        witchMesh.visible = false;
+      }
+
+      document.getElementById('ending-xp-display').textContent = 'XP TOTAL OBTENIDO: ' + xp;
+      document.getElementById('hud').style.display = 'none';
+
+      showScreen('screen-ending');
+      setTimeout(() => {
+        document.getElementById('ending-content').classList.add('visible');
+      }, 600);
+
+      document.getElementById('btn-play-again').addEventListener('click', () => {
+        location.reload();
+      }, { once: true });
+    }
+
+    function openWitchTrial() {
+      // Redirigido a la batalla de Morgalix
+      openMorgalixPhase(0);
     }
 
     function renderWitchTrial() {
@@ -4424,7 +4780,7 @@
     });
   </script>
 </body>
-<iframe id="JotFormIFrame-019ec18416ee7c0c9613eda64b961c1ad996"
+  <iframe id="JotFormIFrame-019ec18416ee7c0c9613eda64b961c1ad996"
   title="Miss Luna: Docente de lengua castellana" allowtransparency="true"
   allow="geolocation; microphone; camera; fullscreen"
   src="https://agent.jotform.com/019ec18416ee7c0c9613eda64b961c1ad996?embedMode=iframe&autofocus=0&background=1&shadow=1"
@@ -4441,4 +4797,5 @@
   window.jotformEmbedHandler("iframe[id='JotFormIFrame-019ec18416ee7c0c9613eda64b961c1ad996']",
     "https://www.jotform.com")
 </script>
+
 </html>
