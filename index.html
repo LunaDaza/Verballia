@@ -1271,6 +1271,112 @@
     .flying-word:hover {
       background: rgba(119, 0, 204, 0.28);
     }
+
+    #boss-intro-banner {
+      position: fixed;
+      top: 28%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9500;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    #boss-intro-banner.active {
+      animation: bossIntroFade 3.4s ease forwards;
+    }
+
+    @keyframes bossIntroFade {
+      0% {
+        opacity: 0;
+      }
+
+      12% {
+        opacity: 1;
+      }
+
+      80% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .boss-intro-line {
+      height: 1px;
+      width: 0;
+      margin: 0.6rem auto;
+      background: linear-gradient(to right, transparent, #cc44ff, transparent);
+      animation: bossLineDraw 1s ease forwards;
+    }
+
+    @keyframes bossLineDraw {
+      to {
+        width: 280px;
+      }
+    }
+
+    .boss-intro-name {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      letter-spacing: 0.18em;
+      color: #e8c8ff;
+      text-shadow: 0 0 30px #8800ff;
+      margin-bottom: 0.2rem;
+    }
+
+    .boss-intro-subtitle {
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #cc99ee;
+      letter-spacing: 0.06em;
+    }
+
+    #boss-healthbar-container {
+      position: fixed;
+      bottom: 5.2rem;
+      left: 50%;
+      transform: translate(-50%, 0);
+      z-index: 9400;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    #boss-healthbar-container.visible {
+      opacity: 1;
+    }
+
+    .boss-hb-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      color: #cc99ee;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .boss-hb-segments {
+      display: flex;
+      gap: 4px;
+    }
+
+    .boss-hb-segment {
+      width: 60px;
+      height: 6px;
+      background: rgba(136, 0, 255, 0.15);
+      border: 1px solid rgba(204, 68, 255, 0.4);
+    }
+
+    .boss-hb-segment.filled {
+      background: linear-gradient(to right, #8800ff, #cc44ff);
+      box-shadow: 0 0 8px #aa44ff;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -1292,6 +1398,7 @@
 
       <div class="hud-xp" id="hud-xp">XP: 0</div>
       <div class="hud-name" id="hud-name">Verbalia</div>
+      <button id="btn-pause" title="Pausa">&#10074;&#10074;</button>
     </div>
   </div>
 
@@ -1303,6 +1410,38 @@
 
   <!-- Fade -->
   <div id="fade-overlay"></div>
+  <!-- Pause Menu -->
+  <div id="pause-overlay">
+    <div id="pause-panel">
+      <div class="pause-title">Pausa</div>
+      <div class="pause-stats">
+        <div class="pause-stat-row"><span>Heroe</span><span id="pause-hero">—</span></div>
+        <div class="pause-stat-row"><span>Vida</span><span id="pause-hp">100 / 100</span></div>
+        <div class="pause-stat-row"><span>Experiencia</span><span id="pause-xp">0 XP</span></div>
+        <div class="pause-stat-row"><span>Zona actual</span><span id="pause-zone">—</span></div>
+      </div>
+      <div class="pause-section">
+        <div class="pause-section-label">Controles</div>
+        <ul class="pause-controls-list">
+          <li><span class="key-tag">WASD</span> Moverse</li>
+          <li><span class="key-tag">Shift</span> Correr</li>
+          <li><span class="key-tag">Espacio</span> Saltar</li>
+          <li><span class="key-tag">E</span> Interactuar</li>
+          <li><span class="key-tag">V</span> Camara</li>
+          <li><span class="key-tag">T</span> Viajar</li>
+          <li><span class="key-tag">Esc</span> Pausa</li>
+        </ul>
+      </div>
+      <div class="pause-section">
+        <div class="pause-section-label">Volumen</div>
+        <input type="range" id="pause-volume" min="0" max="100" value="28">
+      </div>
+      <div class="pause-actions">
+        <button class="pause-btn pause-btn-primary" id="btn-resume-game">Reanudar</button>
+        <button class="pause-btn" id="btn-quit-to-title">Salir al menu principal</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════════
      SCREEN 1 – TITLE
@@ -1356,7 +1495,7 @@
 
       <div class="info-section">
         <div class="info-section-label">Poblacion dirigida</div>
-        <p>Estudiantes de primaria y secundaria, entre 8 y 14 años de edad.</p>
+        <p>Estudiantes de educacion basica secundaria, alrededor de 13 y 14 años (octavo grado).</p>
       </div>
 
       <div class="info-section">
@@ -1757,6 +1896,25 @@
       </div>
     </div>
   </div>
+
+  <div id="screen-memoria" class="screen"
+    style="background:radial-gradient(ellipse at 50% 50%,#1a0a1f 0%,#05020a 100%);padding:2rem 1rem;">
+    <div style="max-width:680px;width:96%;text-align:center;">
+      <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:#cc44ff;margin-bottom:.4rem;letter-spacing:0.1em;">
+        El Archivo de los Espejos
+      </div>
+      <div style="font-size:.9rem;color:rgba(232,213,163,.6);margin-bottom:1.2rem;font-style:italic;">
+        Empareja cada palabra con la frase que la usa correctamente
+      </div>
+      <div id="memoria-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.7rem;margin-bottom:1.2rem;">
+      </div>
+      <div id="memoria-feedback" style="font-family:'Cinzel',serif;font-size:.88rem;min-height:1.4rem;"></div>
+      <div id="memoria-progress"
+        style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--aged);letter-spacing:.14em;">
+        Pares encontrados: 0 / 6
+      </div>
+    </div>
+  </div>
   <!-- ══════════════════════════════════════════
      SCREEN FINAL — VICTORIA
 ══════════════════════════════════════════ -->
@@ -1830,16 +1988,241 @@
     <div id="ending-particles" style="position:absolute;inset:0;z-index:1;pointer-events:none;"></div>
   </div>
 
+  <div id="boss-intro-banner">
+    <div class="boss-intro-line"></div>
+    <div class="boss-intro-name" id="boss-intro-name">MORGALIX</div>
+    <div class="boss-intro-subtitle" id="boss-intro-subtitle">La Bruja del Lenguaje Perdido</div>
+    <div class="boss-intro-line"></div>
+  </div>
+  <div id="boss-healthbar-container">
+    <div class="boss-hb-name" id="boss-hb-name">MORGALIX</div>
+    <div class="boss-hb-segments" id="boss-hb-segments"></div>
+  </div>
   <style>
-    @keyframes fadeInBtn { to { opacity:1; } }
-    @keyframes particleFly {
-      0%   { opacity:0; transform:translateY(0) scale(0.5); }
-      20%  { opacity:1; }
-      100% { opacity:0; transform:translateY(-120px) scale(1.2); }
+    @keyframes fadeInBtn {
+      to {
+        opacity: 1;
+      }
     }
+
+    @keyframes particleFly {
+      0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.5);
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-120px) scale(1.2);
+      }
+    }
+
     #ending-content.visible {
-      opacity:1 !important;
-      transform:translateY(0) !important;
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+
+    /* ══════════════════════════════════════════
+   PAUSE MENU — estilo Elden Ring
+══════════════════════════════════════════ */
+    #pause-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 4, 2, 0.78);
+      backdrop-filter: blur(3px);
+    }
+
+    #pause-overlay.active {
+      display: flex;
+    }
+
+    #pause-panel {
+      width: min(420px, 90vw);
+      max-height: 86vh;
+      overflow-y: auto;
+      background: rgba(10, 8, 6, 0.95);
+      border: 1px solid rgba(184, 146, 42, 0.35);
+      border-top: 2px solid var(--gold);
+      padding: 2.2rem 2rem 1.6rem;
+      animation: popIn 0.3s ease;
+    }
+
+    .pause-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.3em;
+      text-align: center;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+    }
+
+    .pause-stats {
+      margin-bottom: 1.6rem;
+    }
+
+    .pause-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      color: var(--parchment);
+      padding: 0.4em 0;
+      border-bottom: 1px solid rgba(184, 146, 42, 0.15);
+    }
+
+    .pause-stat-row span:first-child {
+      font-family: 'Cinzel', serif;
+      font-size: 0.66rem;
+      letter-spacing: 0.18em;
+      color: var(--aged);
+      text-transform: uppercase;
+    }
+
+    .pause-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .pause-section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(184, 146, 42, 0.2);
+    }
+
+    .pause-controls-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .pause-controls-list li {
+      font-size: 0.82rem;
+      color: rgba(232, 213, 163, 0.8);
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    #pause-volume {
+      width: 100%;
+      accent-color: var(--gold);
+    }
+
+    .pause-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 0.6rem;
+    }
+
+    .pause-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.7em 1.2em;
+      cursor: pointer;
+      border: 1px solid rgba(184, 146, 42, 0.4);
+      background: none;
+      color: var(--parchment);
+      transition: all 0.2s;
+    }
+
+    .pause-btn:hover {
+      background: rgba(184, 146, 42, 0.1);
+      border-color: var(--gold);
+      color: var(--gold-hi);
+    }
+
+    .pause-btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-hi) 100%);
+      color: var(--ink);
+      border: none;
+    }
+
+    .pause-btn-primary:hover {
+      background: linear-gradient(135deg, var(--gold-hi) 0%, #f0d060 100%);
+    }
+
+    #btn-pause {
+      pointer-events: auto;
+      margin-left: 0.8rem;
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid rgba(184, 146, 42, 0.35);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--aged);
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-family: 'Cinzel', serif;
+    }
+
+    #btn-pause:hover {
+      border-color: var(--gold);
+      color: var(--parchment);
+    }
+
+    .memoria-card {
+      background: rgba(204, 68, 255, 0.07);
+      border: 1px solid rgba(204, 68, 255, 0.3);
+      border-top: 2px solid #cc44ff;
+      min-height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 0.4rem;
+      cursor: pointer;
+      font-family: 'Crimson Text', serif;
+      font-size: 0.85rem;
+      color: var(--parchment);
+      text-align: center;
+      transition: all 0.25s;
+      user-select: none;
+    }
+
+    .memoria-card:hover {
+      background: rgba(204, 68, 255, 0.15);
+    }
+
+    .memoria-card.flipped {
+      background: rgba(204, 68, 255, 0.22);
+      border-color: #cc44ff;
+    }
+
+    .memoria-card.matched {
+      background: rgba(126, 203, 141, 0.1);
+      border-color: #7ecb8d;
+      color: #7ecb8d;
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    .memoria-card.hidden-text {
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      color: #cc44ff;
+    }
+
+    .memoria-card.wrong-flash {
+      background: rgba(160, 32, 32, 0.25);
+      border-color: #a02020;
     }
   </style>
 
@@ -1857,6 +2240,8 @@
     let selectedChar = null;
     let teleportCooldown = false;
     let xp = 0;
+    let phaseBeforePause = null;
+    let masterVolume = 0.28;
     let hp = 100;
     const HP_MAX = 100;
     const HP_WRONG_PENALTY = 20;
@@ -2210,11 +2595,11 @@
     // ═══════════════════════════════════════════════════════════
     // ── Configuración de audio por mapa ─────────────────────────
     const MAP_AUDIO = {
-      title:   { file: 'audio/title_sounds.mp3',   startAt: 340  }, // 5:40
-      village: { file: 'audio/title_sounds.mp3',   startAt: 340  }, // 5:40
-      forest:  { file: 'audio/title_sounds.mp3',   startAt: 264  }, // 4:24
-      river:   { file: 'audio/title_sounds.mp3',   startAt: 160  }, // 2:40
-      lake:    { file: 'audio/title_sounds.mp3',   startAt: 340  }, // 5:40
+      title: { file: 'assets/audio/title_sounds.mp3', startAt: 340 }, // 5:40
+      village: { file: 'assets/audio/title_sounds.mp3', startAt: 340 }, // 5:40
+      forest: { file: 'assets/audio/title_sounds.mp3', startAt: 264 }, // 4:24
+      river: { file: 'assets/audio/title_sounds.mp3', startAt: 160 }, // 2:40
+      lake: { file: 'assets/audio/title_sounds.mp3', startAt: 340 }, // 5:40
     };
 
     let currentMapAudio = null;
@@ -2223,7 +2608,7 @@
       try {
         cinematicAudio = new Audio('assets/audio/cinematica.mp3');
         cinematicAudio.volume = 0.7;
-      } catch(e) { cinematicAudio = null; }
+      } catch (e) { cinematicAudio = null; }
       // bgMusic se maneja por mapa ahora
       bgMusic = null;
     }
@@ -2239,19 +2624,19 @@
       if (!cfg) return;
       try {
         const audio = new Audio(cfg.file);
-        audio.volume = 0.28;
+        audio.volume = masterVolume;
         audio.loop = true;
         audio.currentTime = cfg.startAt;
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
         currentMapAudio = audio;
         bgMusic = audio; // compatibilidad con stopBgMusic/playBgMusic existentes
-      } catch(e) {}
+      } catch (e) { }
     }
 
     function playBgMusic() {
       // Compatibilidad — ahora se usa playMapAudio
       if (!soundEnabled || !currentMapAudio) return;
-      currentMapAudio.play().catch(() => {});
+      currentMapAudio.play().catch(() => { });
     }
 
     function stopBgMusic() {
@@ -2260,10 +2645,35 @@
 
     function playFx(src, vol = 0.6) {
       if (!soundEnabled) return;
-      try { const a = new Audio(src); a.volume = vol; a.play().catch(() => {}); } catch(e) {}
+      try { const a = new Audio(src); a.volume = vol; a.play().catch(() => { }); } catch (e) { }
     }
     function playImpact() { playFx('assets/audio/Efeitos Sonoros - IMPACTO.mp3', 0.5); }
     function playAhora() { playFx('assets/audio/AHORA.mp3', 0.5); }
+
+    function showBossIntro(name, subtitle) {
+      const banner = document.getElementById('boss-intro-banner');
+      document.getElementById('boss-intro-name').textContent = name;
+      document.getElementById('boss-intro-subtitle').textContent = subtitle;
+      banner.classList.remove('active');
+      void banner.offsetWidth;
+      banner.classList.add('active');
+      playImpact();
+    }
+
+    function updateBossHealthBar(current, max) {
+      const seg = document.getElementById('boss-hb-segments');
+      seg.innerHTML = '';
+      for (let i = 0; i < max; i++) {
+        const div = document.createElement('div');
+        div.className = 'boss-hb-segment' + (i < current ? ' filled' : '');
+        seg.appendChild(div);
+      }
+      document.getElementById('boss-healthbar-container').classList.add('visible');
+    }
+
+    function hideBossHealthBar() {
+      document.getElementById('boss-healthbar-container').classList.remove('visible');
+    }
 
     // ═══════════════════════════════════════════════════════════
     //  SCREEN MANAGER
@@ -2290,6 +2700,7 @@
           id === 'screen-river2' ||
           id === 'screen-river3' ||
           id === 'screen-witch-trial' ||
+          id === 'screen-memoria' ||
           id === 'screen-morgalix-battle'
         ) {
           hud.style.display = 'block';
@@ -2305,6 +2716,120 @@
       }, 500);
     }
 
+    // ═══════════════════════════════════════════════════════════
+    //  EL ARCHIVO DE LOS ESPEJOS — homofonos y paronimos
+    // ═══════════════════════════════════════════════════════════
+    const MEMORIA_PAIRS = [
+      { id: 0, word: 'haya', sentence: 'Espero que ___ comida en la nevera.' },
+      { id: 1, word: 'halla', sentence: 'Por fin se ___ a si mismo despues de tanto buscar.' },
+      { id: 2, word: 'vaya', sentence: 'Quiero que ___ a la fiesta esta noche.' },
+      { id: 3, word: 'valla', sentence: 'Pintaron la ___ del jardin de color azul.' },
+      { id: 4, word: 'sabia', sentence: 'La anciana del pueblo era muy ___.' },
+      { id: 5, word: 'sabía', sentence: 'Yo no ___ la respuesta correcta.' },
+    ];
+
+    let memoriaCards = [];
+    let memoriaFlipped = [];
+    let memoriaMatches = 0;
+    let memoriaWrongCount = 0;
+    let memoriaLocked = false;
+
+    function openMemoria() {
+      gamePhase = 'puzzle';
+      releasePointerLockIfNeeded();
+      memoriaMatches = 0;
+      memoriaWrongCount = 0;
+      memoriaFlipped = [];
+      memoriaLocked = false;
+
+      memoriaCards = [];
+      MEMORIA_PAIRS.forEach(p => {
+        memoriaCards.push({ pairId: p.id, type: 'word', text: p.word });
+        memoriaCards.push({ pairId: p.id, type: 'sentence', text: p.sentence });
+      });
+      for (let i = memoriaCards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [memoriaCards[i], memoriaCards[j]] = [memoriaCards[j], memoriaCards[i]];
+      }
+
+      const grid = document.getElementById('memoria-grid');
+      grid.innerHTML = '';
+      memoriaCards.forEach((card, idx) => {
+        const div = document.createElement('div');
+        div.className = 'memoria-card hidden-text';
+        div.textContent = '?';
+        div.onclick = () => flipMemoriaCard(idx, div);
+        grid.appendChild(div);
+      });
+
+      document.getElementById('memoria-feedback').textContent = '';
+      document.getElementById('memoria-progress').textContent = 'Pares encontrados: 0 / ' + MEMORIA_PAIRS.length;
+      showScreen('screen-memoria');
+    }
+
+    function flipMemoriaCard(idx, el) {
+      if (memoriaLocked) return;
+      if (el.classList.contains('matched') || el.classList.contains('flipped')) return;
+      if (memoriaFlipped.length >= 2) return;
+
+      const card = memoriaCards[idx];
+      el.classList.remove('hidden-text');
+      el.classList.add('flipped');
+      el.textContent = card.text;
+      memoriaFlipped.push({ idx, el, card });
+
+      if (memoriaFlipped.length === 2) {
+        memoriaLocked = true;
+        const [a, b] = memoriaFlipped;
+        if (a.card.pairId === b.card.pairId && a.card.type !== b.card.type) {
+          a.el.classList.add('matched');
+          b.el.classList.add('matched');
+          memoriaMatches++;
+          addXP(40);
+          document.getElementById('memoria-feedback').textContent = 'Espejo correcto!';
+          document.getElementById('memoria-feedback').style.color = '#7ecb8d';
+          document.getElementById('memoria-progress').textContent = 'Pares encontrados: ' + memoriaMatches + ' / ' + MEMORIA_PAIRS.length;
+          memoriaFlipped = [];
+          memoriaLocked = false;
+          if (memoriaMatches >= MEMORIA_PAIRS.length) setTimeout(finishMemoria, 1400);
+        } else {
+          a.el.classList.add('wrong-flash');
+          b.el.classList.add('wrong-flash');
+          memoriaWrongCount++;
+          document.getElementById('memoria-feedback').textContent = 'No coinciden... el espejo se opaca.';
+          document.getElementById('memoria-feedback').style.color = '#f09595';
+          if (memoriaWrongCount % 3 === 0) takeDamage(HP_WRONG_PENALTY / 2);
+          setTimeout(() => {
+            [a, b].forEach(c => {
+              c.el.classList.remove('flipped', 'wrong-flash');
+              c.el.classList.add('hidden-text');
+              c.el.textContent = '?';
+            });
+            memoriaFlipped = [];
+            memoriaLocked = false;
+            document.getElementById('memoria-feedback').textContent = '';
+          }, 1100);
+        }
+      }
+    }
+
+    function finishMemoria() {
+      gamePhase = 'dialog';
+      showScreen('screen-game');
+      setTimeout(() => {
+        dialogQueue = [
+          { speaker: 'El Archivo Eterno', text: 'Los espejos del lenguaje ya no te confunden.' },
+          { speaker: 'El Archivo Eterno', text: 'Halla y haya, vaya y valla... sabes distinguir su sonido de su sentido.' },
+          { speaker: 'El Archivo Eterno', text: 'Pero queda una ultima prueba: el aire que separa las vocales.' },
+        ];
+        dialogIndex = 0;
+        // TEMP: cuando construyamos "Cofres del Escriba" cambia esta linea por openCofres()
+        dialogCallback = () => { setTimeout(triggerVictoryEnding, 800); };
+        releasePointerLockIfNeeded();
+        showDialog();
+      }, 800);
+    }
+
     function hideLoading() {
       document.getElementById('loading-overlay').classList.add('hidden');
     }
@@ -2312,7 +2837,7 @@
     // ═══════════════════════════════════════════════════════════
     //  TITLE SCREEN
     // ═══════════════════════════════════════════════════════════
-   function initTitleScreen() {
+    function initTitleScreen() {
       document.getElementById('btn-start').addEventListener('click', () => {
         stopBgMusic();
         showScreen('screen-cinematic');
@@ -2331,7 +2856,7 @@
         soundEnabled = !soundEnabled;
         document.getElementById('btn-sound').innerHTML = soundEnabled ? '&#9834;' : '&#9835;';
         if (soundEnabled) {
-          if (currentMapAudio) currentMapAudio.play().catch(() => {});
+          if (currentMapAudio) currentMapAudio.play().catch(() => { });
           else playMapAudio('title');
         } else {
           stopBgMusic();
@@ -3184,8 +3709,13 @@
         if (e.code === 'KeyE') tryInteract();
         if (e.code === 'KeyV') cameraMode = cameraMode === 'third' ? 'first' : 'third';
         if (e.code === 'KeyT') toggleTeleportMenu();
+        // DESPUES
         if (e.code === 'Escape') {
-          closeTeleportMenu();
+          if (gamePhase === 'paused') { closePauseMenu(); return; }
+          if (document.getElementById('teleport-menu').classList.contains('active')) {
+            closeTeleportMenu();
+            return;
+          }
           if (gamePhase === 'dialog') {
             document.getElementById('dialog-box').classList.remove('active');
             gamePhase = 'explore';
@@ -3194,6 +3724,10 @@
             if (skeletonTalked && !skeletonActivated) skeletonTalked = false;
             const canvas = document.getElementById('game-canvas');
             canvas.requestPointerLock();
+            return;
+          }
+          if (gamePhase === 'explore' || gamePhase === 'puzzle') {
+            openPauseMenu();
           }
         }
         if (e.code === 'Enter' && gamePhase === 'dialog') advanceDialog();
@@ -3322,6 +3856,39 @@
         gamePhase = 'explore';
         requestPointerLockIfNeeded();
       }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PAUSE MENU
+    // ═══════════════════════════════════════════════════════════
+    function canOpenPause() {
+      const blocked = ['dialog', 'menu', 'item', 'ending', 'cinematic', 'paused'];
+      if (blocked.includes(gamePhase)) return false;
+      const activeScreen = document.querySelector('.screen.active');
+      if (!activeScreen) return false;
+      return !['screen-title', 'screen-cinematic', 'screen-charselect', 'screen-ending'].includes(activeScreen.id);
+    }
+
+    function openPauseMenu() {
+      if (!canOpenPause()) return;
+      phaseBeforePause = gamePhase;
+      gamePhase = 'paused';
+      releasePointerLockIfNeeded();
+
+      document.getElementById('pause-hero').textContent = selectedChar ? selectedChar.label : '—';
+      document.getElementById('pause-hp').textContent = hp + ' / ' + HP_MAX;
+      document.getElementById('pause-xp').textContent = xp + ' XP';
+      document.getElementById('pause-zone').textContent = MAP_NAMES[currentMap] || currentMap;
+      document.getElementById('pause-volume').value = Math.round(masterVolume * 100);
+
+      document.getElementById('pause-overlay').classList.add('active');
+    }
+
+    function closePauseMenu() {
+      document.getElementById('pause-overlay').classList.remove('active');
+      gamePhase = phaseBeforePause || 'explore';
+      phaseBeforePause = null;
+      if (gamePhase === 'explore') requestPointerLockIfNeeded();
     }
 
     window.teleportTo = function (dest) {
@@ -3688,7 +4255,7 @@
       }
     }
 
-    window.checkMorgalixAnswer = function(selected) {
+    window.checkMorgalixAnswer = function (selected) {
       const phase = MORGALIX_PHASES[morgalixPhase];
       const fb = document.getElementById('morgalix-feedback');
       const btns = document.querySelectorAll('#morgalix-options .echo-btn');
@@ -3699,6 +4266,7 @@
         fb.textContent = phase.winText;
         fb.style.color = '#7ecb8d';
         morgalixHP--;
+        updateBossHealthBar(morgalixHP, 3);
         addXP(100);
         playImpact();
 
@@ -3708,13 +4276,14 @@
             gamePhase = 'dialog';
             showScreen('screen-game');
             setTimeout(() => {
+              // DESPUES
               dialogQueue = [
                 { speaker: 'Morgalix', text: '¡NOOOO! ¡Imposible! ¡Las tres reglas! ¡Las conoces todas!' },
                 { speaker: 'Morgalix', text: 'El grimorio... se completa... mis hechizos... se deshacen...' },
-                { speaker: 'Morgalix', text: 'Las palabras... siempre fueron más poderosas que yo...' },
+                { speaker: 'Morgalix', text: 'Pero el Archivo Eterno aun guarda un ultimo laberinto de espejos...' },
               ];
               dialogIndex = 0;
-              dialogCallback = () => { setTimeout(triggerVictoryEnding, 800); };
+              dialogCallback = () => { setTimeout(openMemoria, 800); };
               releasePointerLockIfNeeded();
               showDialog();
             }, 1000);
@@ -3749,6 +4318,7 @@
       }
     };
 
+
     function startWellDialog() {
       gamePhase = 'dialog';
       dialogQueue = [
@@ -3760,6 +4330,24 @@
         gamePhase = 'explore';
         document.getElementById('objective-banner').classList.remove('hidden');
         document.getElementById('objective-text').textContent = 'Ve al pozo y restaura la palabra correcta';
+      };
+      showDialog();
+    }
+
+    function startAncianaDialog1() {
+      ancianaTalked = true;
+      gamePhase = 'dialog';
+      document.getElementById('objective-banner').classList.add('hidden');
+      dialogQueue = [
+        { speaker: 'Anciana Guardiana', text: 'Viajero... por fin llegas. Morgalix ha robado las palabras de este reino.' },
+        { speaker: 'Anciana Guardiana', text: 'Pozos sellados, bosques silenciados... el lenguaje mismo se desvanece.' },
+        { speaker: 'Anciana Guardiana', text: 'Toma este grimorio. Esta vacio, pero cada palabra que restaures llenara sus paginas de poder.' },
+        { speaker: 'Anciana Guardiana', text: 'Comienza por el pozo del pueblo. Fue sellado con una palabra incompleta.' },
+      ];
+      dialogIndex = 0;
+      dialogCallback = () => {
+        gamePhase = 'item';
+        showItemPopup();
       };
       showDialog();
     }
@@ -4459,7 +5047,14 @@
         { speaker: 'Bruja del Lago', text: 'Te pondre a prueba con un unico hechizo de tres voces.' },
       ];
       dialogIndex = 0;
-      dialogCallback = () => { setTimeout(openWitchTrial, 600); };
+      dialogCallback = () => {
+        setTimeout(() => {
+          showBossIntro('MORGALIX', 'La Bruja del Lenguaje Perdido');
+          morgalixHP = 3;
+          updateBossHealthBar(morgalixHP, 3);
+          setTimeout(openWitchTrial, 1600);
+        }, 400);
+      };
       showDialog();
     }
 
@@ -4479,6 +5074,7 @@
     ];
 
     function triggerVictoryEnding() {
+      hideBossHealthBar();
       gamePhase = 'ending';
       releasePointerLockIfNeeded();
 
@@ -4786,12 +5382,18 @@
         if (titleEl) titleEl.classList.add('active');
         if (typeof initTitleScreen === 'function') initTitleScreen();
       }, 1200);
+      document.getElementById('btn-resume-game').addEventListener('click', closePauseMenu);
+      document.getElementById('btn-pause').addEventListener('click', openPauseMenu);
+      document.getElementById('btn-quit-to-title').addEventListener('click', () => location.reload());
+      document.getElementById('pause-volume').addEventListener('input', (e) => {
+        masterVolume = e.target.value / 100;
+        if (currentMapAudio) currentMapAudio.volume = masterVolume;
+      });
     });
   </script>
 </body>
-  <iframe id="JotFormIFrame-019ec18416ee7c0c9613eda64b961c1ad996"
-  title="Miss Luna: Docente de lengua castellana" allowtransparency="true"
-  allow="geolocation; microphone; camera; fullscreen"
+<iframe id="JotFormIFrame-019ec18416ee7c0c9613eda64b961c1ad996" title="Miss Luna: Docente de lengua castellana"
+  allowtransparency="true" allow="geolocation; microphone; camera; fullscreen"
   src="https://agent.jotform.com/019ec18416ee7c0c9613eda64b961c1ad996?embedMode=iframe&autofocus=0&background=1&shadow=1"
   frameborder="0" style="
     max-width:100%;
