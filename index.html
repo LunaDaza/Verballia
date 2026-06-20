@@ -2115,8 +2115,9 @@
         return [
           { npc: witchMesh, color: '#5fcf9a' },
         ];
-        // Skeleton_Rogue no aparece en el lago
       }
+      return [];
+    }
 
     function renderMinimap() {
       const canvas = document.getElementById('minimap');
@@ -2311,7 +2312,8 @@
     // ═══════════════════════════════════════════════════════════
     //  TITLE SCREEN
     // ═══════════════════════════════════════════════════════════
-    document.getElementById('btn-start').addEventListener('click', () => {
+   function initTitleScreen() {
+      document.getElementById('btn-start').addEventListener('click', () => {
         stopBgMusic();
         showScreen('screen-cinematic');
         startCinematic();
@@ -2328,11 +2330,15 @@
       document.getElementById('btn-sound').addEventListener('click', () => {
         soundEnabled = !soundEnabled;
         document.getElementById('btn-sound').innerHTML = soundEnabled ? '&#9834;' : '&#9835;';
-        if (soundEnabled) playBgMusic(); else stopBgMusic();
+        if (soundEnabled) {
+          if (currentMapAudio) currentMapAudio.play().catch(() => {});
+          else playMapAudio('title');
+        } else {
+          stopBgMusic();
+        }
       });
 
       initAudio();
-      // Audio del title screen arranca en 5:40
       setTimeout(() => playMapAudio('title'), 1400);
     }
 
@@ -4773,9 +4779,12 @@
     // ═══════════════════════════════════════════════════════════
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
-        hideLoading();
-        showScreen('screen-title');
-        initTitleScreen();
+        const loadingEl = document.getElementById('loading-overlay');
+        if (loadingEl) loadingEl.classList.add('hidden');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const titleEl = document.getElementById('screen-title');
+        if (titleEl) titleEl.classList.add('active');
+        if (typeof initTitleScreen === 'function') initTitleScreen();
       }, 1200);
     });
   </script>
