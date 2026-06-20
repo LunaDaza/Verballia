@@ -2540,7 +2540,10 @@
           const _b = new THREE.Box3().setFromObject(m);
           MAP_BOUNDS.minX = _b.min.x - 50; MAP_BOUNDS.maxX = _b.max.x + 50;
           MAP_BOUNDS.minZ = _b.min.z - 50; MAP_BOUNDS.maxZ = _b.max.z + 50;
-          buildMinimapBackground();   // ← NUEVO: genera el fondo del minimapa al cargar el mapa inicial
+          setTimeout(() => {
+            m.updateMatrixWorld(true);
+            buildMinimapBackground();
+          }, 600);
         });
       } else {
         const geo = new THREE.PlaneGeometry(120, 120);
@@ -3250,7 +3253,10 @@
           }
 
           minimapBgCanvas = null;
-          buildMinimapBackground();
+          setTimeout(() => {
+            m.updateMatrixWorld(true);
+            buildMinimapBackground();
+          }, 600);
           if (playerMesh) playerMesh.position.set(spawn.x, 5, spawn.z);
 
           document.getElementById('objective-banner').classList.remove('hidden');
